@@ -1,0 +1,45 @@
+{
+  "name": "ttlock-hass-integration-frontend",
+  "version": "0.1.0",
+  "author": "Emanuel Posescu <kind3r@gmail.com>",
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "deploy": "npm run build && rm -rf ../addon/frontend/* && cp -r ./dist/* ../addon/frontend/",
+    "start": "vue-cli-service serve --open"
+  },
+  "dependencies": {
+    "core-js": "^3.6.5",
+    "moment": "^2.29.1",
+    "reconnecting-websocket": "^4.4.0",
+    "vue": "^2.6.11",
+    "vue-router": "^3.2.0",
+    "vuetify": "^2.2.11",
+    "vuex": "^3.4.0"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-plugin-router": "~4.5.0",
+    "@vue/cli-plugin-vuex": "~4.5.0",
+    "@vue/cli-service": "~4.5.0",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.7.2",
+    "eslint-plugin-vue": "^6.2.2",
+    "sass": "^1.19.0",
+    "sass-loader": "^8.0.0",
+    "vue-cli-plugin-vuetify": "^2.0.9",
+    "vue-template-compiler": "^2.6.11",
+    "vuetify-loader": "^1.3.0"
+  },
+  "bugs": {
+    "url": "https://github.com/kind3r/hass-addons/issues"
+  },
+  "homepage": "https://github.com/kind3r/hass-addons/tree/master/ttlock-hass-integration",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kind3r/ttlock-hass-integration.git"
+  }
+}

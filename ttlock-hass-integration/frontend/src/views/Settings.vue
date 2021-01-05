@@ -1,0 +1,336 @@
+<template>
+  <v-form>
+    <v-container>
+      <h1>
+        {{ lock.name }}
+      </h1>
+      <v-row>
+        <v-col>
+          <v-slider v-model="autoLockTime" class="align-center" label="Auto lock time" hint="(0 to disable)" persistent-hint max="100" min="0">
+            <template v-slot:append>
+              <v-text-field v-model="autoLockTime" class="mt-0 pt-0" hide-details single-line type="number" style="width: 60px"></v-text-field>
+            </template>
+          </v-slider>
+        </v-col>
+      </v-row>
+      <v-row class="mt-4">
+        <v-col>
+          <v-toolbar dense>
+            <v-toolbar-title>
+              <v-icon>mdi-gesture-tap</v-icon>
+              Keyboard PIN codes
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-progress-circular v-if="passcodes == -1" indeterminate color="primary"></v-progress-circular>
+            <v-btn color="primary" v-else v-on:click="showEditPasscodeDialog()">
+              <v-icon>mdi-key-plus</v-icon>
+              Add PIN
+            </v-btn>
+          </v-toolbar>
+          <p v-if="passcodes == -1" class="text-center mt-4">Loading...</p>
+          <v-simple-table v-else>
+            <template v-slot:default>
+              <thead>
+                <tr>
+                  <th class="text-left">Type</th>
+                  <th class="text-left">PIN Code</th>
+                  <th class="text-left">Valid from</th>
+                  <th class="text-left">Valid to</th>
+                  <th class="text-left">&nbsp;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="passcode of passcodes" :key="passcode.passCode">
+                  <td>{{ passcodeTypeText[passcode.type] }}</td>
+                  <td>
+                    <strong>{{ passcode.passCode }}</strong>
+                  </td>
+                  <td>{{ dateTime(passcode.startDate) }}</td>
+                  <td>{{ dateTime(passcode.endDate) }}</td>
+                  <td class="text-right">
+                    <v-btn class="mx-2" fab dark small color="blue" v-on:click="showEditPasscodeDialog(passcode)" title="Change PIN">
+                      <v-icon dark> mdi-pencil </v-icon>
+                    </v-btn>
+                    <v-btn class="mx-2" fab dark small color="red" v-on:click="showDeletePasscodeDialog(passcode)" title="Delete PIN">
+                      <v-icon dark> mdi-delete </v-icon>
+                    </v-btn>
+                  </td>
+                </tr>
+              </tbody>
+            </template>
+          </v-simple-table>
+        </v-col>
+      </v-row>
+      <v-row class="mt-4">
+        <v-col>
+          <v-toolbar dense>
+            <v-toolbar-title>
+              <v-icon>mdi-credit-card-wireless</v-icon>
+              IC Cards
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-progress-circular v-if="cards == -1" indeterminate color="primary"></v-progress-circular>
+            <v-btn color="primary" v-else v-on:click="showEditCardDialog()">
+              <v-icon>mdi-key-plus</v-icon>
+              Add IC Card
+            </v-btn>
+          </v-toolbar>
+          <p v-if="cards == -1" class="text-center mt-4">Loading...</p>
+          <v-simple-table v-else>
+            <template v-slot:default>
+              <thead>
+                <tr>
+                  <th class="text-left">Card S/N</th>
+                  <th class="text-left">Valid from</th>
+                  <th class="text-left">Valid to</th>
+                  <th class="text-left">&nbsp;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="card of cards" :key="card.cardNumber">
+                  <td>
+                    <strong>{{ card.cardNumber }}</strong>
+                  </td>
+                  <td>{{ dateTime(card.startDate) }}</td>
+                  <td>{{ dateTime(card.endDate) }}</td>
+                  <td class="text-right">
+                    <v-btn v-if="false" class="mx-2" fab dark small color="blue" v-on:click="showEditCardDialog(card)" title="Edit Card">
+                      <v-icon dark> mdi-pencil </v-icon>
+                    </v-btn>
+                    <v-btn class="mx-2" fab dark small color="red" v-on:click="showDeleteCardDialog(card)" title="Delete Card">
+                      <v-icon dark> mdi-delete </v-icon>
+                    </v-btn>
+                  </td>
+                </tr>
+              </tbody>
+            </template>
+          </v-simple-table>
+        </v-col>
+      </v-row>
+      <v-row class="mt-4">
+        <v-col>
+          <v-toolbar dense>
+            <v-toolbar-title>
+              <v-icon>mdi-fingerprint</v-icon>
+              Fingerprints
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-progress-circular v-if="fingers == -1" indeterminate color="primary"></v-progress-circular>
+            <v-btn color="primary" v-else v-on:click="showEditFingerDialog()">
+              <v-icon>mdi-key-plus</v-icon>
+              Add Fingerprint
+            </v-btn>
+          </v-toolbar>
+          <p v-if="fingers == -1" class="text-center mt-4">Loading...</p>
+          <v-simple-table v-else>
+            <template v-slot:default>
+              <thead>
+                <tr>
+                  <th class="text-left">Fingerprint ID</th>
+                  <th class="text-left">Valid from</th>
+                  <th class="text-left">Valid to</th>
+                  <th class="text-left">&nbsp;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="finger of fingers" :key="finger.fpNumber">
+                  <td>
+                    <strong>{{ finger.fpNumber }}</strong>
+                  </td>
+                  <td>{{ dateTime(finger.startDate) }}</td>
+                  <td>{{ dateTime(finger.endDate) }}</td>
+                  <td class="text-right">
+                    <v-btn class="mx-2" fab dark small color="blue" v-on:click="showEditFingerDialog(finger)" title="Edit Finger">
+                      <v-icon dark> mdi-pencil </v-icon>
+                    </v-btn>
+                    <v-btn class="mx-2" fab dark small color="red" v-on:click="showDeleteFingerDialog(finger)" title="Delete Finger">
+                      <v-icon dark> mdi-delete </v-icon>
+                    </v-btn>
+                  </td>
+                </tr>
+              </tbody>
+            </template>
+          </v-simple-table>
+        </v-col>
+      </v-row>
+    </v-container>
+    <Passcode :address="address" v-model="editPasscode" :show="showEditPasscode" v-on:cancel="cancelEditPasscodeDialog"></Passcode>
+    <Card :address="address" v-model="editCard" :show="showEditCard" v-on:cancel="cancelEditCardDialog"></Card>
+    <Finger :address="address" v-model="editFinger" :show="showEditFinger" v-on:cancel="cancelEditFingerDialog"></Finger>
+    <ConfirmDlg ref="confirm" />
+    <v-snackbar v-model="hasErrors" :vertical="vertical" color="red">
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title v-for="error of errors" :key="error.message">{{ error.message }}</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="black" text v-bind="attrs" @click="clearErrors"> Close </v-btn>
+      </template>
+    </v-snackbar>
+  </v-form>
+</template>
+<script>
+import moment from "moment";
+import Passcode from "@/components/Passcode";
+import Card from "@/components/Card";
+import Finger from "@/components/Finger";
+import ConfirmDlg from "@/components/ConfirmDlg";
+
+export default {
+  name: "Settings",
+  params: ["address"],
+  components: {
+    Passcode,
+    Card,
+    Finger,
+    ConfirmDlg,
+  },
+  data: function () {
+    return {
+      address: this.$route.params.address || this.address,
+      autoLockTime: -1,
+      passcodes: -1,
+      cards: -1,
+      fingers: -1,
+      editPasscode: -1,
+      showEditPasscode: false,
+      editCard: -1,
+      showEditCard: false,
+      editFinger: -1,
+      showEditFinger: false,
+    };
+  },
+  computed: {
+    lock() {
+      const locks = this.$store.state.locks;
+      // no concern for perfomance here as we are not planning on managing a hole building
+      for (const lock of locks) {
+        if (lock.address == this.address) {
+          return lock;
+        }
+      }
+      return {};
+    },
+    storeIsWaiting() {
+      return this.$store.state.waitingCredentials;
+    },
+    passcodeTypeText() {
+      return {
+        1: "Permanent",
+        2: "Count",
+        3: "Timed",
+        4: "Cyclic",
+      };
+    },
+    hasErrors() {
+      return this.errors.length > 0;
+    },
+    errors() {
+      return this.$store.state.errors;
+    },
+  },
+  created() {
+    if (typeof this.lock.name == "undefined") {
+      this.$router.push({
+        name: "Home",
+      });
+    } else {
+      this.autoLockTime = this.lock.autoLockTime;
+      this.$store.commit("setActiveLockAddress", this.lock.address);
+      this.$store.dispatch("readCredentials", this.lock.address);
+    }
+  },
+  beforeDestroy() {
+    this.$store.commit("setActiveLockAddress", "");
+  },
+  methods: {
+    dateTime(str) {
+      return moment(str, "YYYYMMDDHHmm").format("DD-MM-YYYY HH:mm");
+    },
+    showEditPasscodeDialog(passcode) {
+      if (typeof passcode != "undefined") {
+        this.editPasscode = passcode;
+      }
+      this.showEditPasscode = true;
+    },
+    async showDeletePasscodeDialog(passcode) {
+      if (typeof passcode != "undefined") {
+        if (await this.$refs.confirm.open("Confirm", "Are you sure you want to delete this PIN ?")) {
+          passcode.newPassCode = -1;
+          this.$store.dispatch("setPasscode", {
+            lockAddress: this.address,
+            passcode: passcode,
+          });
+          this.passcodes = -1;
+        }
+      }
+    },
+    cancelEditPasscodeDialog() {
+      this.editPasscode = -1;
+      this.showEditPasscode = false;
+    },
+    showEditCardDialog(card) {
+      if (typeof card != "undefined") {
+        this.editCard = card;
+      }
+      this.showEditCard = true;
+    },
+    async showDeleteCardDialog(card) {
+      if (typeof card != "undefined") {
+        if (await this.$refs.confirm.open("Confirm", "Are you sure you want to delete this Card ?")) {
+          card.startDate = -1;
+          this.$store.dispatch("setCard", {
+            lockAddress: this.address,
+            card: card,
+          });
+          this.cards = -1;
+        }
+      }
+    },
+    cancelEditCardDialog() {
+      this.editCard = -1;
+      this.showEditCard = false;
+    },
+    showEditFingerDialog(finger) {
+      if (typeof finger != "undefined") {
+        this.editFinger = finger;
+      }
+      this.showEditFinger = true;
+    },
+    async showDeleteFingerDialog(finger) {
+      if (typeof card != "undefined") {
+        if (await this.$refs.confirm.open("Confirm", "Are you sure you want to delete this Fingerprint ?")) {
+          finger.startDate = -1;
+          this.$store.dispatch("setFinger", {
+            lockAddress: this.address,
+            finger: finger,
+          });
+          this.fingers = -1;
+        }
+      }
+    },
+    cancelEditFingerDialog() {
+      this.editFinger = -1;
+      this.showEditFinger = false;
+    },
+    clearErrors() {
+      this.$store.commit("clearErrors");
+    },
+  },
+  watch: {
+    storeIsWaiting(newVal) {
+      if (newVal === false) {
+        this.passcodes = this.$store.state.passcodes[this.address];
+        this.cards = this.$store.state.cards[this.address];
+        this.fingers = this.$store.state.fingers[this.address];
+      } else {
+        // this.passcodes = -1;
+        // this.cards = -1;
+        // this.fingers = -1;
+      }
+    },
+  },
+};
+</script>

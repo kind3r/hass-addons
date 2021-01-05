@@ -1,0 +1,24 @@
+{
+  "name": "TTLock",
+  "version": "0.1.0",
+  "slug": "ttlock-hass-integration",
+  "description": "Integration of the offline TTLock SDK into Home Assistant",
+  "url": "https://github.com/kind3r/hass-addons",
+  "panel_icon": "mdi:key-wireless",
+  "startup": "application",
+  "boot": "auto",
+  "homeassistant_api": true,
+  "hassio_api": true,
+  "host_network": true,
+  "host_dbus": true,
+  "auth_api": true,
+  "ingress": true,
+  "ingress_port": 55099,
+  "ingress_entry": "frontend/",
+  "services": [
+    "mqtt:want"
+  ],
+  "options": {},
+  "schema": {}, 
+  "arch": ["amd64", "armv7", "armhf", "i386" , "aarch64"]
+}
