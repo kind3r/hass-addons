@@ -476,6 +476,8 @@ class Manager extends EventEmitter {
       listChanged = true;
     }
 
+    console.log("Discovered lock:", lock.toJSON());
+
     if (listChanged) {
       this.emit("lockListChanged");
     }
