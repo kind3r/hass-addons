@@ -1,7 +1,7 @@
 # Changelog
 
-## [0.2.5] - 2021-01-12
-- Add support for BLE Gateway 
+## [0.2.6] - 2021-01-12
+- Add support for BLE Gateway (not TTLock G2 gateway)
 
 ## [0.1.1] - 2021-01-08
 - Possible fix for discovering unpaired locks

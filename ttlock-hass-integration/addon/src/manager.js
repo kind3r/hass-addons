@@ -78,7 +78,12 @@ class Manager extends EventEmitter {
 
         this.client = new TTLockClient(clientOptions);
 
-        const adapterReady = await this.client.prepareBTService();
+        await this.client.prepareBTService();
+        this.client.on("ready", () => {
+          // should not trigger if prepareBTService emits it
+          // but useful for when websocket reconnects
+          this.startScan(ScanType.AUTOMATIC);
+        });
         this.client.on("foundLock", this._onFoundLock.bind(this));
         this.client.on("scanStart", this._onScanStarted.bind(this));
         this.client.on("scanStop", this._onScanStopped.bind(this));
