@@ -42,7 +42,6 @@ module.exports = async (options) => {
       options.gateway_host,
       options.gateway_port,
       options.gateway_key,
-      options.gateway_key,
       options.gateway_user,
       options.gateway_pass
     );
