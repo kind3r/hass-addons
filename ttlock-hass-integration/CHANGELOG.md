@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.1] - 2021-01-12
+- Add support for BLE Gateway 
+
 ## [0.1.1] - 2021-01-08
 - Possible fix for discovering unpaired locks
 - Debug found locks
