@@ -493,6 +493,7 @@ class Manager extends EventEmitter {
     if (lock.isPaired()) {
       // check if lock is known
       // add it to the list of known locks and connect it
+      console.log("Discovered paired lock:", lock.toJSON());
       this.pairedLocks.set(lock.getAddress(), lock);
       // add it to the connect queue
       this.connectQueue.add(lock.getAddress());
@@ -505,11 +506,12 @@ class Manager extends EventEmitter {
     } else if (!lock.isInitialized()) {
       // check if lock is in pairing mode
       // add it to the list of new locks, ready to be initialized
+      console.log("Discovered new lock:", lock.toJSON());
       this.newLocks.set(lock.getAddress(), lock);
       listChanged = true;
+    } else {
+      console.log("Discovered unknown lock:", lock.toJSON());
     }
-
-    console.log("Discovered lock:", lock.toJSON());
 
     if (listChanged) {
       this.emit("lockListChanged");
