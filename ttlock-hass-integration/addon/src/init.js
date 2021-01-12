@@ -14,6 +14,12 @@ const HomeAssistant = require('./ha');
  * @param {string} options.mqttSSL MQTT ssl
  * @param {string} options.mqttUser MQTT username
  * @param {string} options.mqttPass MQTT password
+ * @param {'none'|'noble'} options.gateway External BLE gateway type
+ * @param {string} options.gateway_host Gateway hostname or IP
+ * @param {number} options.gateway_port Gateway port
+ * @param {string} options.gateway_key Gateway AES key
+ * @param {string} options.gateway_user Gateway username
+ * @param {string} options.gateway_pass  Gateway password
  */
 module.exports = async (options) => {
   console.log("Options:", JSON.stringify(options));
@@ -31,6 +37,16 @@ module.exports = async (options) => {
 
   // initialize manager
   const manager = require("./manager");
+  if (options.gateway  && options.gateway == "noble") {
+    manager.setNobleGateway(
+      options.gateway_host,
+      options.gateway_port,
+      options.gateway_key,
+      options.gateway_key,
+      options.gateway_user,
+      options.gateway_pass
+    );
+  }
   var ha;
   if (options.mqttHost && options.mqttUser && options.mqttPass) {
     const haOptions = {
@@ -42,6 +58,7 @@ module.exports = async (options) => {
     ha = new HomeAssistant(manager, haOptions);
     await ha.connect();
   }
+
   await manager.init();
 
   // create express app

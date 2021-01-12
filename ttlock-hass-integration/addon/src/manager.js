@@ -46,6 +46,13 @@ class Manager extends EventEmitter {
     this.newLocks = new Map();
     /** @type {Set<string>} Locks found during scan that we need to connect to */
     this.connectQueue = new Set();
+    /** @type {'none'|'noble'} */
+    this.gateway = 'none';
+    this.gateway_host = "";
+    this.gateway_port = 0;
+    this.gateway_key = "";
+    this.gateway_user =  "";
+    this.gateway_pass = "";
   }
 
   async init() {
@@ -54,10 +61,22 @@ class Manager extends EventEmitter {
         const { TTLockClient, sleep } = require("ttlock-sdk-js");
 
         const lockData = store.getLockData();
-
-        this.client = new TTLockClient({
+        let clientOptions = {
           lockData: store.getLockData()
-        });
+        }
+
+        if (this.gateway == "noble") {
+          clientOptions.scannerType = "noble-websocket";
+          clientOptions.scannerOptions = {
+            websocketHost: this.gateway_host,
+            websocketPort: this.gateway_port,
+            websocketAesKey: this.gateway_key,
+            websocketUsername: this.gateway_user,
+            websocketPassword: this.gateway_pass
+          }
+        }
+
+        this.client = new TTLockClient(clientOptions);
 
         const adapterReady = await this.client.prepareBTService();
         this.client.on("foundLock", this._onFoundLock.bind(this));
@@ -74,6 +93,15 @@ class Manager extends EventEmitter {
         this.startupStatus = 1;
       }
     }
+  }
+
+  setNobleGateway(gateway_host, gateway_port, gateway_key, gateway_user, gateway_pass) {
+    this.gateway = "noble";
+    this.gateway_host = gateway_host;
+    this.gateway_port = gateway_port;
+    this.gateway_key = gateway_key;
+    this.gateway_user = gateway_user;
+    this.gateway_pass = gateway_pass;
   }
 
   getStartupStatus() {
