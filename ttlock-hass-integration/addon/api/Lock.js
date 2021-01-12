@@ -31,8 +31,12 @@ class Lock {
     lock.connected = lockObject.isConnected();
     lock.rssi = lockObject.getRssi();
     lock.battery = lockObject.getBattery();
-    lock.autoLockTime = await lockObject.getAutolockTime();
-    lock.locked = await lockObject.getLockStatus();
+    try {
+      lock.autoLockTime = await lockObject.getAutolockTime();
+      lock.locked = await lockObject.getLockStatus();
+    } catch (error) {
+      // new locks don't have this data
+    }
 
     return lock;
   }
