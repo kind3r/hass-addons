@@ -78,7 +78,7 @@ class Manager extends EventEmitter {
 
         this.client = new TTLockClient(clientOptions);
 
-        await this.client.prepareBTService();
+        const adapterReady = await this.client.prepareBTService();
         this.client.on("ready", () => {
           // should not trigger if prepareBTService emits it
           // but useful for when websocket reconnects
