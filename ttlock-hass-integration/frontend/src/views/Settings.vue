@@ -13,7 +13,7 @@
           </v-slider>
         </v-col>
       </v-row>
-      <v-row class="mt-4">
+      <v-row class="mt-4" v-if="lock && lock.hasPasscode && passcodes !== false">
         <v-col>
           <v-toolbar dense>
             <v-toolbar-title>
@@ -61,7 +61,7 @@
           </v-simple-table>
         </v-col>
       </v-row>
-      <v-row class="mt-4">
+      <v-row class="mt-4" v-if="lock && lock.hasCard && cards !== false">
         <v-col>
           <v-toolbar dense>
             <v-toolbar-title>
@@ -107,7 +107,7 @@
           </v-simple-table>
         </v-col>
       </v-row>
-      <v-row class="mt-4">
+      <v-row class="mt-4" v-if="lock && lock.hasFinger && fingers !== false">
         <v-col>
           <v-toolbar dense>
             <v-toolbar-title>

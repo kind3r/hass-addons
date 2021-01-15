@@ -1,5 +1,6 @@
 'use strict';
 
+const WebSocket = require('ws');
 const manager = require("../src/manager");
 const Lock = require("./Lock");
 const Message = require("./Message");
@@ -16,27 +17,32 @@ class WsApi {
 
   /**
    * Send status update and lock list
+   * @param {WebSocket.Server} wss
    */
-  async sendStatus() {
+  static async sendStatus(wss) {
     const message = new Message();
     message.setType("status");
     message.setData({
       startup: manager.getStartupStatus(),
       scan: manager.getIsScanning() ? 1 : 0,
-      locks: await this.getLocks()
+      locks: await WsApi.getLocks()
     });
-    this.ws.send(message.toJSON());
+    for (let ws of wss.clients) {
+      ws.send(message.toJSON());
+    }
   }
 
   /**
-   * 
+   * @param {WebSocket.Server} wss
    * @param {import('ttlock-sdk-js').TTLock} lock 
    */
-  async sendLockStatus(lock) {
+  static async sendLockStatus(wss, lock) {
     const message = new Message();
     message.setType("lockStatus");
     message.setData(await Lock.fromTTLock(lock));
-    this.ws.send(message.toJSON());
+    for (let ws of wss.clients) {
+      ws.send(message.toJSON());
+    }
   }
 
   async sendCredentials(address, credentials) {
@@ -118,9 +124,9 @@ class WsApi {
     this.ws.send(message.toJSON());
   }
 
-  async getLocks() {
+  static async getLocks() {
     if (process.env.DEV_MODE) {
-      return await this._devLocks();
+      return await WsApi._devLocks();
     }
     const newVisibleLocks = manager.getNewVisible();
     const pairedVisibleLocks = manager.getPairedVisible();
@@ -142,14 +148,14 @@ class WsApi {
     return locks;
   }
 
-  async _devLocks() {
+  static async _devLocks() {
     await sleep(1000);
     return JSON.parse('[{"address":"E1:58:1B:3A:60:5E","rssi":-73,"battery":63,"name":"S202F_5e603a","paired":true,"connected":false,"locked":0,"autoLockTime":5}]');
   }
 
-  async _devSendCredentials() {
+  static async _devSendCredentials(ws) {
     await sleep(2000);
-    this.ws.send('{"type":"credentials","data":{"address":"E1:58:1B:3A:60:5E","passcodes":[{"type":1,"newPassCode":"654321","passCode":"654321","startDate":"200001010000"},{"type":1,"newPassCode":"123456","passCode":"123456","startDate":"200001010000"}],"cards":[{"cardNumber":"1978662719","startDate":"200001010000","endDate":"209912012359"},{"cardNumber":"167741690","startDate":"200001010000","endDate":"202212312359"},{"cardNumber":"147943900","startDate":"200001010000","endDate":"202212312359"}],"fingers":[{"fpNumber":"43431281557504","startDate":"200001010000","endDate":"202212312359"}]}}');
+    ws.send('{"type":"credentials","data":{"address":"E1:58:1B:3A:60:5E","passcodes":[{"type":1,"newPassCode":"654321","passCode":"654321","startDate":"200001010000"},{"type":1,"newPassCode":"123456","passCode":"123456","startDate":"200001010000"}],"cards":[{"cardNumber":"1978662719","startDate":"200001010000","endDate":"209912012359"},{"cardNumber":"167741690","startDate":"200001010000","endDate":"202212312359"},{"cardNumber":"147943900","startDate":"200001010000","endDate":"202212312359"}],"fingers":[{"fpNumber":"43431281557504","startDate":"200001010000","endDate":"202212312359"}]}}');
   }
 }
 

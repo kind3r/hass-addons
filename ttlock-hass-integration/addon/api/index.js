@@ -11,6 +11,22 @@ module.exports = async (server) => {
     path: "/api"
   });
 
+  async function sendStatusUpdate() {
+    WsApi.sendStatus(wss);
+  }
+
+  async function sendLockStatusUpdate(lock) {
+    WsApi.sendLockStatus(wss, lock);
+  }
+
+  manager.on("lockListChanged", sendStatusUpdate);
+  manager.on("lockPaired", sendStatusUpdate);
+  manager.on("lockConnected", sendLockStatusUpdate);
+  manager.on("lockLock", sendLockStatusUpdate);
+  manager.on("lockUnlock", sendLockStatusUpdate);
+  manager.on("scanStart", sendStatusUpdate);
+  manager.on("scanStop", sendStatusUpdate);
+
   wss.on('connection', (ws) => {
 
     const api = new WsApi(ws);
@@ -21,7 +37,7 @@ module.exports = async (server) => {
         switch (msg.type) {
 
           case "status": // send status
-            api.sendStatus();
+            sendStatusUpdate();
             break;
 
           case "scan": // start scanning
@@ -35,7 +51,7 @@ module.exports = async (server) => {
                 const locks = manager.getNewVisible();
                 const lock = locks.get(msg.data.address);
                 if (lock) {
-                  api.sendLockStatus(lock);
+                  WsApi.sendLockStatus(wss, lock);
                 }
               }
             }
@@ -48,7 +64,7 @@ module.exports = async (server) => {
                 const locks = manager.getPairedVisible();
                 const lock = locks.get(msg.data.address);
                 if (lock) {
-                  api.sendLockStatus(lock);
+                  WsApi.sendLockStatus(wss, lock);
                 }
               }
             }
@@ -61,7 +77,7 @@ module.exports = async (server) => {
                 const locks = manager.getPairedVisible();
                 const lock = locks.get(msg.data.address);
                 if (lock) {
-                  api.sendLockStatus(lock);
+                  WsApi.sendLockStatus(wss, lock);
                 }
               }
             }
@@ -70,7 +86,7 @@ module.exports = async (server) => {
           case "credentials": // read all credentials from lock
             if (msg.data && msg.data.address) {
               if (process.env.DEV_MODE) {
-                api._devSendCredentials();
+                WsApi._devSendCredentials(ws);
                 break;
               }
 
@@ -86,7 +102,7 @@ module.exports = async (server) => {
           case "passcode":
             if (msg.data && msg.data.address && msg.data.passcode) {
               if (process.env.DEV_MODE) {
-                api._devSendCredentials();
+                WsApi._devSendCredentials(ws);
                 break;
               }
 
@@ -116,7 +132,7 @@ module.exports = async (server) => {
           case "card":
             if (msg.data && msg.data.address && msg.data.card) {
               if (process.env.DEV_MODE) {
-                api._devSendCredentials();
+                WsApi._devSendCredentials(ws);
                 break;
               }
 
@@ -146,7 +162,7 @@ module.exports = async (server) => {
           case "finger":
             if (msg.data && msg.data.address && msg.data.finger) {
               if (process.env.DEV_MODE) {
-                api._devSendCredentials();
+                WsApi._devSendCredentials(ws);
                 break;
               }
 
@@ -176,50 +192,28 @@ module.exports = async (server) => {
       }
     });
 
-    async function sendStatusUpdate() {
-      api.sendStatus();
-    }
-
-    async function sendLockStatusUpdate(lock) {
-      api.sendLockStatus(lock);
-    }
-
     async function sendLockCardScan(lock) {
       api.sendCardScan(lock.getAddress());
     }
-
+  
     async function sendLockFingerScan(lock) {
       api.sendFingerScan(lock.getAddress());
     }
-
+  
     async function sendLockFingerScanProgress(lock) {
       api.sendFingerScanProgress(lock.getAddress());
     }
-
-    manager.on("lockListChanged", sendStatusUpdate);
-    manager.on("lockPaired", sendStatusUpdate);
-    manager.on("lockConnected", sendLockStatusUpdate);
-    manager.on("lockLock", sendLockStatusUpdate);
-    manager.on("lockUnlock", sendLockStatusUpdate);
+    
     manager.on("lockCardScan", sendLockCardScan);
     manager.on("lockFingerScan", sendLockFingerScan);
     manager.on("lockFingerScanProgress", sendLockFingerScanProgress);
-    manager.on("scanStart", sendStatusUpdate);
-    manager.on("scanStop", sendStatusUpdate);
-
+  
     ws.on("close", async () => {
-      manager.off("lockListChanged", sendStatusUpdate);
-      manager.off("lockPaired", sendStatusUpdate);
-      manager.off("lockConnected", sendLockStatusUpdate);
-      manager.off("lockLock", sendLockStatusUpdate);
-      manager.off("lockUnlock", sendLockStatusUpdate);
       manager.off("lockCardScan", sendLockCardScan);
       manager.off("lockFingerScan", sendLockFingerScan);
       manager.off("lockFingerScanProgress", sendLockFingerScanProgress);
-      manager.off("scanStart", sendStatusUpdate);
-      manager.off("scanStop", sendStatusUpdate);
     });
 
-    api.sendStatus();
+    WsApi.sendStatus(wss);
   });
 }

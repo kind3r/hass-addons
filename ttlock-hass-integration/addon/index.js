@@ -2,7 +2,7 @@
 
 // Catch errors from noble
 process.on('uncaughtException', (error, promise) => {
-  console.error('uncaughtException catched:', promise);
+  console.error('uncaughtException catch:', promise);
   console.error(error);
   const manager = require("./src/manager");
   manager.startupStatus = 1;

@@ -133,10 +133,12 @@ class HomeAssistant {
       const id = this.getLockId(lock);
       const stateTopic = "ttlock/" + id;
       const lockedStatus = await lock.getLockStatus();
-      const statePayload = {
+      let statePayload = {
         battery: lock.getBattery(),
         rssi: lock.getRssi(),
-        state: lockedStatus == LockedStatus.LOCKED ? "LOCK" : "UNLOCK"
+      }
+      if (lockedStatus != LockedStatus.UNKNOWN) {
+        statePayload.state = lockedStatus == LockedStatus.LOCKED ? "LOCK" : "UNLOCK";
       }
 
       console.log("MQTT Publish", stateTopic, JSON.stringify(statePayload));

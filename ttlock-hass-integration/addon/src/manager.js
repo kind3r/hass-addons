@@ -9,7 +9,7 @@ const ScanType = Object.freeze({
   MANUAL: 2
 });
 
-const SCAN_MAX = 6;
+const SCAN_MAX = 3;
 
 /**
  * Sleep for
@@ -44,7 +44,7 @@ class Manager extends EventEmitter {
     this.pairedLocks = new Map();
     /** @type {Map<string, import('ttlock-sdk-js').TTLock>} Locks that are pairable and were seen during the BLE scan */
     this.newLocks = new Map();
-    /** @type {Set<string>} Locks found during scan that we need to connect to */
+    /** @type {Set<string>} Locks found during scan that we need to connect to at least once to get their information */
     this.connectQueue = new Set();
     /** @type {'none'|'noble'} */
     this.gateway = 'none';
@@ -214,30 +214,22 @@ class Manager extends EventEmitter {
   }
 
   async getCredentials(address) {
-    const lock = this.pairedLocks.get(address);
-    if (typeof lock != "undefined") {
-      if (!(await this._connectLock(lock))) {
-        return false;
-      }
-      try {
-        const passcodes = await lock.getPassCodes();
-        const cards = await lock.getICCards();
-        const fingers = await lock.getFingerprints();
-        return {
-          passcodes: passcodes,
-          cards: cards,
-          fingers: fingers
-        };
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    return false;
+    const passcodes = await this.getPasscodes(address);
+    const cards = await this.getCards(address);
+    const fingers = await this.getFingers(address);
+    return {
+      passcodes: passcodes,
+      cards: cards,
+      fingers: fingers
+    };
   }
 
   async addPasscode(address, type, passCode, startDate, endDate) {
     const lock = this.pairedLocks.get(address);
     if (typeof lock != "undefined") {
+      if (!lock.hasPassCode()) {
+        return false;
+      }
       if (!(await this._connectLock(lock))) {
         return false;
       }
@@ -254,6 +246,9 @@ class Manager extends EventEmitter {
   async updatePasscode(address, type, oldPasscode, newPasscode, startDate, endDate) {
     const lock = this.pairedLocks.get(address);
     if (typeof lock != "undefined") {
+      if (!lock.hasPassCode()) {
+        return false;
+      }
       if (!(await this._connectLock(lock))) {
         return false;
       }
@@ -270,6 +265,9 @@ class Manager extends EventEmitter {
   async deletePasscode(address, type, passCode) {
     const lock = this.pairedLocks.get(address);
     if (typeof lock != "undefined") {
+      if (!lock.hasPassCode()) {
+        return false;
+      }
       if (!(await this._connectLock(lock))) {
         return false;
       }
@@ -286,6 +284,9 @@ class Manager extends EventEmitter {
   async getPasscodes(address) {
     const lock = this.pairedLocks.get(address);
     if (typeof lock != "undefined") {
+      if (!lock.hasPassCode()) {
+        return false;
+      }
       if (!(await this._connectLock(lock))) {
         return false;
       }
@@ -302,6 +303,9 @@ class Manager extends EventEmitter {
   async addCard(address, startDate, endDate) {
     const lock = this.pairedLocks.get(address);
     if (typeof lock != "undefined") {
+      if (!lock.hasICCard()) {
+        return false;
+      }
       if (!(await this._connectLock(lock))) {
         return false;
       }
@@ -318,6 +322,9 @@ class Manager extends EventEmitter {
   async updateCard(address, card, startDate, endDate) {
     const lock = this.pairedLocks.get(address);
     if (typeof lock != "undefined") {
+      if (!lock.hasICCard()) {
+        return false;
+      }
       if (!(await this._connectLock(lock))) {
         return false;
       }
@@ -334,6 +341,9 @@ class Manager extends EventEmitter {
   async deleteCard(address, card) {
     const lock = this.pairedLocks.get(address);
     if (typeof lock != "undefined") {
+      if (!lock.hasICCard()) {
+        return false;
+      }
       if (!(await this._connectLock(lock))) {
         return false;
       }
@@ -350,6 +360,9 @@ class Manager extends EventEmitter {
   async getCards(address) {
     const lock = this.pairedLocks.get(address);
     if (typeof lock != "undefined") {
+      if (!lock.hasICCard()) {
+        return false;
+      }
       if (!(await this._connectLock(lock))) {
         return false;
       }
@@ -366,6 +379,9 @@ class Manager extends EventEmitter {
   async addFinger(address, startDate, endDate) {
     const lock = this.pairedLocks.get(address);
     if (typeof lock != "undefined") {
+      if (!lock.hasFingerprint()) {
+        return false;
+      }
       if (!(await this._connectLock(lock))) {
         return false;
       }
@@ -382,6 +398,9 @@ class Manager extends EventEmitter {
   async updateFinger(address, finger, startDate, endDate) {
     const lock = this.pairedLocks.get(address);
     if (typeof lock != "undefined") {
+      if (!lock.hasFingerprint()) {
+        return false;
+      }
       if (!(await this._connectLock(lock))) {
         return false;
       }
@@ -398,6 +417,9 @@ class Manager extends EventEmitter {
   async deleteFinger(address, finger) {
     const lock = this.pairedLocks.get(address);
     if (typeof lock != "undefined") {
+      if (!lock.hasFingerprint()) {
+        return false;
+      }
       if (!(await this._connectLock(lock))) {
         return false;
       }
@@ -414,6 +436,9 @@ class Manager extends EventEmitter {
   async getFingers(address) {
     const lock = this.pairedLocks.get(address);
     if (typeof lock != "undefined") {
+      if (!lock.hasFingerprint()) {
+        return false;
+      }
       if (!(await this._connectLock(lock))) {
         return false;
       }
@@ -432,13 +457,13 @@ class Manager extends EventEmitter {
    * @param {import('ttlock-sdk-js').TTLock} lock 
    * @param {boolean} readData 
    */
-  async _connectLock(lock, readData = false) {
+  async _connectLock(lock, readData = true) {
     if (this.scanning) return false;
     if (!lock.isConnected()) {
       try {
         const res = await lock.connect(!readData);
         if (!res) {
-          console.log("Connect to lock failed", address);
+          console.log("Connect to lock failed", lock.getAddress());
           return false;
         }
       } catch (error) {
@@ -460,17 +485,15 @@ class Manager extends EventEmitter {
     this.scanning = false;
     console.log("BLE Scan stopped");
     if (this.scanType == ScanType.NONE) {
-      // check lock connect queue
-      if (this.connectQueue.size > 0) {
-        console.log("Connecting to paired locks");
-        await sleep(500);
-        for (let address of this.connectQueue) {
-          console.log("Auto connect to", address);
-          const lock = this.pairedLocks.get(address);
-          if (typeof lock != "undefined") {
-            await lock.connect();
-          }
+      console.log("Refreshing paired locks");
+      for (let [address, lock] of this.pairedLocks) {
+        console.log("Auto connect to", address);
+        const result = await lock.connect();
+        if (result) {
+          console.log("Successful connect attempt to paired lock", address);
           this.connectQueue.delete(address);
+        } else {
+          console.log("Unsuccessful connect attempt to paired lock", address);
         }
       }
     }
@@ -482,33 +505,32 @@ class Manager extends EventEmitter {
    * @param {import('ttlock-sdk-js').TTLock} lock 
    */
   async _onFoundLock(lock) {
-    lock.on("connected", this._onLockConnected.bind(this));
-    lock.on("disconnected", this._onLockDisconnected.bind(this));
-    lock.on("locked", this._onLockLocked.bind(this));
-    lock.on("unlocked", this._onLockUnlocked.bind(this));
-    lock.on("scanICStart", () => this.emit("lockCardScan", lock));
-    lock.on("scanFRStart", () => this.emit("lockFingerScan", lock));
-    lock.on("scanFRProgress", () => this.emit("lockFingerScanProgress", lock));
     let listChanged = false;
     if (lock.isPaired()) {
       // check if lock is known
-      // add it to the list of known locks and connect it
-      console.log("Discovered paired lock:", lock.toJSON());
-      this.pairedLocks.set(lock.getAddress(), lock);
-      // add it to the connect queue
-      this.connectQueue.add(lock.getAddress());
-      // check if all known locks were found and stop scan
-      if (this.scanType == ScanType.AUTOMATIC && this.connectQueue.size >= this.client.lockData.size) {
-        console.log("All known locks found, stopping scan");
-        await this.stopScan();
+      if (!this.pairedLocks.has(lock.getAddress())) {
+        this._bindLockEvents(lock);
+        // add it to the list of known locks and connect it
+        console.log("Discovered paired lock:", lock.toJSON());
+        this.pairedLocks.set(lock.getAddress(), lock);
+        // add it to the connect queue
+        this.connectQueue.add(lock.getAddress());
+        // check if all known locks were found and stop scan
+        if (this.scanType == ScanType.AUTOMATIC && this.connectQueue.size >= this.client.lockData.size) {
+          console.log("All known locks found, stopping scan");
+          await this.stopScan();
+        }
+        listChanged = true;
       }
-      listChanged = true;
     } else if (!lock.isInitialized()) {
-      // check if lock is in pairing mode
-      // add it to the list of new locks, ready to be initialized
-      console.log("Discovered new lock:", lock.toJSON());
-      this.newLocks.set(lock.getAddress(), lock);
-      listChanged = true;
+      if (!this.newLocks.has(lock.getAddress())) {
+        this._bindLockEvents(lock);
+        // check if lock is in pairing mode
+        // add it to the list of new locks, ready to be initialized
+        console.log("Discovered new lock:", lock.toJSON());
+        this.newLocks.set(lock.getAddress(), lock);
+        listChanged = true;
+      }
     } else {
       console.log("Discovered unknown lock:", lock.toJSON());
     }
@@ -516,6 +538,20 @@ class Manager extends EventEmitter {
     if (listChanged) {
       this.emit("lockListChanged");
     }
+  }
+
+  /**
+   * 
+   * @param {import('ttlock-sdk-js').TTLock} lock 
+   */
+  _bindLockEvents(lock) {
+    lock.on("connected", this._onLockConnected.bind(this));
+    lock.on("disconnected", this._onLockDisconnected.bind(this));
+    lock.on("locked", this._onLockLocked.bind(this));
+    lock.on("unlocked", this._onLockUnlocked.bind(this));
+    lock.on("scanICStart", () => this.emit("lockCardScan", lock));
+    lock.on("scanFRStart", () => this.emit("lockFingerScan", lock));
+    lock.on("scanFRProgress", () => this.emit("lockFingerScanProgress", lock));
   }
 
   /**

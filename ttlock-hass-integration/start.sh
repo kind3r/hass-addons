@@ -11,6 +11,14 @@ export GATEWAY_PORT=$(bashio::config "gateway_port")
 export GATEWAY_KEY=$(bashio::config "gateway_key")
 export GATEWAY_USER=$(bashio::config "gateway_user")
 export GATEWAY_PASS=$(bashio::config "gateway_pass")
+if $(bashio::config.true "ignore_crc"); then
+  echo "IGNORE CRC TRUE"
+  export TTLOCK_IGNORE_CRC=1
+fi
+if $(bashio::config.equals "gateway" "noble"); then
+  echo "Disable noble auto-binding"
+  export NOBLE_WEBSOCKET=1
+fi
 
 cd /app
 npm start
