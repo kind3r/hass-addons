@@ -300,7 +300,7 @@ export default {
       this.showEditFinger = true;
     },
     async showDeleteFingerDialog(finger) {
-      if (typeof card != "undefined") {
+      if (typeof finger != "undefined") {
         if (await this.$refs.confirm.open("Confirm", "Are you sure you want to delete this Fingerprint ?")) {
           finger.startDate = -1;
           this.$store.dispatch("setFinger", {

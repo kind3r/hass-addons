@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.10] - 2021-01-15
+## [0.2.11] - 2021-01-15
 - Filter credentials type availability based on lock features
 - Force noble in websocket mode to avoid missing BLE adapter
 - Unstable connection fixes from SDK
