@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.10] - 2021-01-15
+- Filter credentials type availability based on lock features
+- Force noble in websocket mode to avoid missing BLE adapter
+- Unstable connection fixes from SDK
+- Status updates to all clients
+- Reduce scan interval
+- Option to ignore CRC errors (`ingnore_crc: true` in config)
+
 ## [0.2.7] - 2021-01-12
 - Add support for BLE Gateway (not TTLock G2 gateway)
 
