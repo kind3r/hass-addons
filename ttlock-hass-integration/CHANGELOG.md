@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.13] - 2020-01-16
+## [0.2.14] - 2020-01-16
 - Basic config editing UI for saving/restoring lock pairing data
 
 ## [0.2.12] - 2020-01-16

@@ -83,6 +83,7 @@ class Manager extends EventEmitter {
           this.startScan(ScanType.AUTOMATIC);
         });
         this.client.on("foundLock", this._onFoundLock.bind(this));
+        this.client.on("updatedLock", this._onUpdatedLock.bind(this));
         this.client.on("scanStart", this._onScanStarted.bind(this));
         this.client.on("scanStop", this._onScanStopped.bind(this));
         // if there are saved locks start scanning to connect to them
@@ -536,6 +537,29 @@ class Manager extends EventEmitter {
       }
     } else {
       console.log("Discovered unknown lock:", lock.toJSON());
+    }
+
+    if (listChanged) {
+      this.emit("lockListChanged");
+    }
+  }
+
+  /**
+   * 
+   * @param {import('ttlock-sdk-js').TTLock} lock 
+   */
+  async _onUpdatedLock(lock) {
+    let listChanged = false;
+    if (lock.isPaired() && !this.pairedLocks.has(lock.getAddress())) {
+      this._bindLockEvents(lock);
+      // add it to the list of known locks
+      console.log("Discovered paired lock:", lock.toJSON());
+      this.pairedLocks.set(lock.getAddress(), lock);
+      listChanged = true;
+      if (this.scanType == ScanType.NONE) {
+        // if this was not updated during scanning, simulate a connect to push info to HA
+        this.emit("lockConnected", lock);
+      }
     }
 
     if (listChanged) {
