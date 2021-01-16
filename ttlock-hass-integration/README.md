@@ -2,9 +2,11 @@
 
 > This is a **WORK IN PROGRESS**. Help with testing and report bugs [here](https://github.com/kind3r/hass-addons/issues).
 
+Feeling generous and want to support my work, here is [my PayPal link](https://paypal.me/kind3r).
+
 ## Requirements
 - Bluetooth adapter compatible with [@abandonware/noble](https://github.com/abandonware/noble)
-- MQTT broker (optional)
+- MQTT broker (optional but recommended if you want to report lock status in HA and use it for automations)
 
 ## Features
 - Ingress Web UI for
@@ -13,7 +15,7 @@
   - Add / edit PIN codes
   - Add / remove IC Cards
   - Add / remove fingerprints
-- (optional) HA reporting and controling via `lock` device using MQTT discovery
+- (optional) HA reporting and controling via `lock` domain device using MQTT discovery
   - Signal level
   - Battery level
   - Lock/unlock status
@@ -21,49 +23,14 @@
 ## Screenshots
 
 ### Lock list  
-![Lock list](./img/frontend1.png)  
+![Lock list](https://github.com/kind3r/hass-addons/raw/master/ttlock-hass-integration/img/frontend1.png)  
 
 ### Credentials  
-![Credentials](./img/frontend2.png)  
+![Credentials](https://github.com/kind3r/hass-addons/raw/master/ttlock-hass-integration/img/frontend2.png)  
 
 ### Add fingerprint  
-![Add fingerprint](./img/frontend3.png)  
+![Add fingerprint](https://github.com/kind3r/hass-addons/raw/master/ttlock-hass-integration/img/frontend3.png)  
 
 ### HA device
-![HA device](./img/ha1.png)  
-
-
-## How to use
-- Install addon (it will take a while to build the docker image, be patient)
-- (optional) Install an MQTT broker addon (such as Mosquitto)
-- Configure gateway options (see below)
-- Open Web UI (from Supervisor -> TTLock or from the sidebar)
-- Pair a lock (lock needs to be awake when starting the addon or running a BLE scan manually)
-- If you installed the MQTT broker the device should now be visibile as a `lock`
-
-## Known issues
-- Low BLE signal (which seems to be the case in general) can lead to
-  - sometimes failing to pair the lock (make sure you can reset it to factory defaults)
-  - failure to read all credentials
-  - failure to discover paired locks at startup
-- Unable to edit fingerprint validity inteval
-- Cannot set autolock time
-- Can't save or edit the locks secret store file in order to migrate to another installation
-
-## Gateway options
-
-If your HA host does not have a Bluetooth adapter, you can use another computer/PI/ESP32 as a gateway.   
-
-Use the Configure tab to specify gateway options:
-```yaml
-gateway: "noble"
-gateway_host: "192.168.1.10"
-gateway_port: 80
-gateway_key: "00112233445566778899aabbccddeeff"
-gateway_user: "admin"
-gateway_pass: "admin"
-```
-
-Please see [ttlock-sdk-js Gateway option](https://github.com/kind3r/ttlock-sdk-js#gateway-option) for running an example gateway server.
-
+![HA device](https://github.com/kind3r/hass-addons/raw/master/ttlock-hass-integration/img/ha1.png)  
 

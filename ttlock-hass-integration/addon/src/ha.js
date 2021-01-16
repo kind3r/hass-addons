@@ -39,7 +39,7 @@ class HomeAssistant {
         password: this.mqttPass
       });
       this.client.on("message", this._onMQTTMessage.bind(this));
-      await this.client.subscribe("ttlock/#");
+      await this.client.subscribe("ttlock/+/set");
       this.connected = true;
       console.log("MQTT connected");
     }
@@ -87,10 +87,12 @@ class HomeAssistant {
         state_unlocked: "UNLOCK",
         value_template: "{{ value_json.state }}",
         optimistic: false,
-        retain: true
+        retain: false
       }
-      console.log("MQTT Publish", configLockTopic, JSON.stringify(lockPayload));
-      let res = await this.client.publish(configLockTopic, JSON.stringify(lockPayload));
+      if (process.env.MQTT_DEBUG == "1") {
+        console.log("MQTT Publish", configLockTopic, JSON.stringify(lockPayload));
+      }
+      let res = await this.client.publish(configLockTopic, JSON.stringify(lockPayload), { retain: true });
 
       // setup battery sensor
       const configBatteryTopic = this.discovery_prefix + "/sensor/" + id + "/battery/config";
@@ -103,8 +105,10 @@ class HomeAssistant {
         state_topic: "ttlock/" + id,
         value_template: "{{ value_json.battery }}",
       }
-      console.log("MQTT Publish", configBatteryTopic, JSON.stringify(batteryPayload));
-      res = await this.client.publish(configBatteryTopic, JSON.stringify(batteryPayload));
+      if (process.env.MQTT_DEBUG == "1") {
+        console.log("MQTT Publish", configBatteryTopic, JSON.stringify(batteryPayload));
+      }
+      res = await this.client.publish(configBatteryTopic, JSON.stringify(batteryPayload), { retain: true });
 
       // setup rssi sensor
       const configRssiTopic = this.discovery_prefix + "/sensor/" + id + "/rssi/config";
@@ -117,8 +121,10 @@ class HomeAssistant {
         state_topic: "ttlock/" + id,
         value_template: "{{ value_json.rssi }}",
       }
-      console.log("MQTT Publish", configRssiTopic, JSON.stringify(rssiPayload));
-      res = await this.client.publish(configRssiTopic, JSON.stringify(rssiPayload));
+      if (process.env.MQTT_DEBUG == "1") {
+        console.log("MQTT Publish", configRssiTopic, JSON.stringify(rssiPayload));
+      }
+      res = await this.client.publish(configRssiTopic, JSON.stringify(rssiPayload), { retain: true });
 
       this.configuredLocks.add(lock.getAddress());
     }
@@ -141,8 +147,10 @@ class HomeAssistant {
         statePayload.state = lockedStatus == LockedStatus.LOCKED ? "LOCK" : "UNLOCK";
       }
 
-      console.log("MQTT Publish", stateTopic, JSON.stringify(statePayload));
-      const res = await this.client.publish(stateTopic, JSON.stringify(statePayload));
+      if (process.env.MQTT_DEBUG == "1") {
+        console.log("MQTT Publish", stateTopic, JSON.stringify(statePayload));
+      }
+      const res = await this.client.publish(stateTopic, JSON.stringify(statePayload), { retain: true });
     }
   }
 
@@ -200,7 +208,9 @@ class HomeAssistant {
       }
       address = address.toUpperCase();
       const command = message.toString('utf8');
-      console.log("MQTT command:", address, command);
+      if (process.env.MQTT_DEBUG == "1") {
+        console.log("MQTT command:", address, command);
+      }
       switch (command) {
         case "LOCK":
           this.manager.lockLock(address);
@@ -209,7 +219,7 @@ class HomeAssistant {
           this.manager.unlockLock(address);
           break;
       }
-    } else {
+    } else if (process.env.MQTT_DEBUG == "1") {
       console.log("Topic:", topic);
       console.log("Message:", message.toString('utf8'));
     }
