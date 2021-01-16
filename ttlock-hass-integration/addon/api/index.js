@@ -2,6 +2,7 @@
 
 const WebSocket = require('ws');
 const manager = require("../src/manager");
+const store = require('../src/store');
 const Message = require("./Message");
 const WsApi = require("./WsApi");
 
@@ -184,6 +185,25 @@ module.exports = async (server) => {
                   api.sendFingers(msg.data.address, fingers);
                 } else { // notify failure
                   api.sendError("Failed fetching fingerprints", msg);
+                }
+              }
+            }
+            break;
+
+          case "config":
+            if (msg.data) {
+              if (msg.data.get) {
+                api.sendConfig();
+              } else if (msg.data.set) {
+                try {
+                  const lockData = JSON.parse(msg.data.set);
+                  store.setLockData(lockData);
+                  await store.saveData();
+                  manager.updateClientLockDataFromStore();
+                  manager.startScan();
+                  api.sendConfigConfirm();
+                } catch (error) {
+                  api.sendConfigConfirm("Failed to set config");
                 }
               }
             }

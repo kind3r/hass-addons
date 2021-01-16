@@ -1,7 +1,8 @@
 'use strict';
 
 /**
- * @typedef {'status'|'scan'|'pair'|'lock'|'unlock'|'lockStatus'|'credentials'|'passcode'|'card'|'finger'|'error'} MessageType
+ * @typedef {'status'|'scan'|'pair'|'lock'|'unlock'|'lockStatus'
+ * |'credentials'|'passcode'|'card'|'finger'|'error'|'config'} MessageType
  */
 
 class Message {

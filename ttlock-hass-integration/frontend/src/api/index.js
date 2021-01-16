@@ -111,6 +111,24 @@ class Api {
     }));
   }
 
+  async loadConfig() {
+    this.ws.send(JSON.stringify({
+      type: "config",
+      data: {
+        get: true
+      }
+    }));
+  }
+
+  async saveConfig(config) {
+    this.ws.send(JSON.stringify({
+      type: "config",
+      data: {
+        set: config
+      }
+    }));
+  }
+
   async _onMessage(messageEvent) {
     try {
       const message = JSON.parse(messageEvent.data);
@@ -154,6 +172,16 @@ class Api {
             break;
           case "error":
             this.store.commit("setError", message.data);
+            break;
+          case "config":
+            if (typeof message.data.config != "undefined") {
+              this.store.commit("setConfig", message.data.config);
+            } else {
+              this.store.commit("setWaitingConfig", false);
+              if (message.data.set !== true) {
+                this.store.commit("setError", message.data.set);
+              }
+            }
             break;
         }
       }

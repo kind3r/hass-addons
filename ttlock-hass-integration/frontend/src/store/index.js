@@ -23,6 +23,8 @@ const store = new Vuex.Store({
     waiting: false,
     errors: [],
     activeLockAddress: "",
+    config: "",
+    waitingConfig: false
   },
   mutations: {
     setReady(state) {
@@ -124,6 +126,13 @@ const store = new Vuex.Store({
     },
     setActiveLockAddress(state, lockAddress) {
       state.activeLockAddress = lockAddress;
+    },
+    setConfig(state, config) {
+      state.config = config;
+      state.waitingConfig = false;
+    },
+    setWaitingConfig(state, isWaiting) {
+      state.waitingConfig = isWaiting;
     }
   },
   actions: {
@@ -173,6 +182,18 @@ const store = new Vuex.Store({
       if (state.waiting || state.setWaitingCredentials) return;
       commit("setWaitingCredentials");
       api.setFinger(lockAddress, finger);
+    },
+    async loadConfig({state, commit}) {
+      if (state.waitingConfig) return;
+      commit("setConfig", "");
+      commit("setWaitingConfig", true);
+      api.loadConfig();
+    },
+    async saveConfig({state, commit}, config) {
+      if (state.waitingConfig) return;
+      commit("setConfig", "");
+      commit("setWaitingConfig", true);
+      api.saveConfig(config);
     }
   }
 });

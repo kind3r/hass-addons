@@ -2,6 +2,7 @@
 
 const WebSocket = require('ws');
 const manager = require("../src/manager");
+const store = require("../src/store");
 const Lock = require("./Lock");
 const Message = require("./Message");
 const { sleep } = require("ttlock-sdk-js");
@@ -120,6 +121,24 @@ class WsApi {
     message.setData({
       message: error,
       originalMessage: originalMessage
+    });
+    this.ws.send(message.toJSON());
+  }
+
+  async sendConfig() {
+    const message = new Message();
+    message.setType("config");
+    message.setData({
+      config: JSON.stringify(store.getLockData())
+    });
+    this.ws.send(message.toJSON());
+  }
+
+  async sendConfigConfirm(error) {
+    const message = new Message();
+    message.setType("config");
+    message.setData({
+      set: typeof error != "undefined" ? error : true
     });
     this.ws.send(message.toJSON());
   }

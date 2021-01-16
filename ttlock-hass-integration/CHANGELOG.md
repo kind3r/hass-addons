@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.13] - 2020-01-16
+- Basic config editing UI for saving/restoring lock pairing data
+
 ## [0.2.12] - 2020-01-16
 - Persist device state between HA restarts
 - Option for MQTT debug (`debug_mqtt: true` in config)

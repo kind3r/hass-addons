@@ -60,10 +60,7 @@ class Manager extends EventEmitter {
       try {
         const { TTLockClient, sleep } = require("ttlock-sdk-js");
 
-        const lockData = store.getLockData();
-        let clientOptions = {
-          lockData: store.getLockData()
-        }
+        let clientOptions = {}
 
         if (this.gateway == "noble") {
           clientOptions.scannerType = "noble-websocket";
@@ -77,6 +74,7 @@ class Manager extends EventEmitter {
         }
 
         this.client = new TTLockClient(clientOptions);
+        this.updateClientLockDataFromStore();
 
         const adapterReady = await this.client.prepareBTService();
         this.client.on("ready", () => {
@@ -88,7 +86,7 @@ class Manager extends EventEmitter {
         this.client.on("scanStart", this._onScanStarted.bind(this));
         this.client.on("scanStop", this._onScanStopped.bind(this));
         // if there are saved locks start scanning to connect to them
-        if (adapterReady && lockData.length > 0) {
+        if (adapterReady && store.getLockData().length > 0) {
           await this.startScan(ScanType.AUTOMATIC);
         }
 
@@ -98,6 +96,11 @@ class Manager extends EventEmitter {
         this.startupStatus = 1;
       }
     }
+  }
+
+  updateClientLockDataFromStore() {
+    const lockData = store.getLockData();
+    this.client.setLockData(lockData);
   }
 
   setNobleGateway(gateway_host, gateway_port, gateway_key, gateway_user, gateway_pass) {
@@ -573,6 +576,8 @@ class Manager extends EventEmitter {
    */
   async _onLockDisconnected(lock) {
     console.log("Disconnected from lock " + lock.getAddress());
+    store.setLockData(this.client.getLockData());
+    await store.saveData();
   }
 
   /**

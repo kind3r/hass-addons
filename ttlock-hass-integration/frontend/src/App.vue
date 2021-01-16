@@ -9,6 +9,9 @@
 
       <v-spacer></v-spacer>
       <template v-if="isHome">
+        <v-btn icon v-on:click="editConfig" :disabled="isScanning" title="Edit locks configuration file">
+          <v-icon>mdi-puzzle-edit-outline</v-icon>
+        </v-btn>
         <v-progress-circular v-if="isScanning" indeterminate color="primary"></v-progress-circular>
         <v-btn v-else icon v-on:click="startScan" title="Start BLE scan">
           <v-icon>mdi-sync</v-icon>
@@ -24,12 +27,23 @@
 
     <v-main>
       <router-view></router-view>
+      <ConfigDlg :show="showConfigDialog" v-on:cancel="hideConfigDialog"></ConfigDlg>
     </v-main>
   </v-app>
 </template>
 
 <script>
+import ConfigDlg from "@/components/ConfigDlg";
+
 export default {
+  components: {
+    ConfigDlg
+  },
+  data: function() {
+    return {
+      showConfigDialog: false
+    }
+  },
   computed: {
     ready() {
       return this.$store.state.ready;
@@ -75,6 +89,12 @@ export default {
         this.$store.dispatch("readCredentials", address);
       }
     },
+    editConfig() {
+      this.showConfigDialog = true;
+    },
+    hideConfigDialog() {
+      this.showConfigDialog = false;
+    }
   },
 };
 </script>
