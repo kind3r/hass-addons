@@ -84,6 +84,20 @@ module.exports = async (server) => {
             }
             break;
 
+          case "autolock":
+            if (msg.data && msg.data.address) {
+              if (typeof msg.data.time != "undefined") {
+                const res = await manager.setAutoLock(msg.data.address, parseInt(msg.data.time));
+                if (res === true) {
+                  await sendStatusUpdate();
+                  api.sendAutoLockSet(msg.data.addres);
+                } else {
+                  api.sendError("Unable to set auto-lock time", msg);
+                }
+              }
+            }
+            break;
+
           case "credentials": // read all credentials from lock
             if (msg.data && msg.data.address) {
               if (process.env.DEV_MODE) {

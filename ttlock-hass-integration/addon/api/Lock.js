@@ -17,6 +17,8 @@ class Lock {
   locked;
   /** @type {number} The number of seconds the lock will auto lock after being unlocked */
   autoLockTime;
+  /** @type {boolean} If the lock has auto-lock feature */
+  hasAutoLock;
   /** @type {boolean} If the lock has a keypad and supports passcodes (PIN) */
   hasPasscode;
   /** @type {boolean} If the lock has card reader support */
@@ -43,6 +45,7 @@ class Lock {
     } catch (error) {
       // new locks don't have this data
     }
+    lock.hasAutoLock = lockObject.hasAutolock();
     lock.hasPasscode = lockObject.hasPassCode();
     lock.hasCard = lockObject.hasICCard();
     lock.hasFinger = lockObject.hasFingerprint();

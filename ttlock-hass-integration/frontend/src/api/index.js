@@ -72,6 +72,16 @@ class Api {
     }));
   }
 
+  async setAutoLock(address, time) {
+    this.ws.send(JSON.stringify({
+      type: "autolock",
+      data: {
+        address: address,
+        time: time
+      }
+    }));
+  }
+
   async requestCredentials(address) {
     this.ws.send(JSON.stringify({
       type: "credentials",
@@ -152,6 +162,9 @@ class Api {
             if (message.data) {
               this.store.commit("setLock", message.data);
             }
+            break;
+          case "autolock":
+            this.store.commit("setWaitingAutoLock", false);
             break;
           case "credentials":
             if (message.data) {

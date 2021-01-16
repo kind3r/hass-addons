@@ -24,7 +24,8 @@ const store = new Vuex.Store({
     errors: [],
     activeLockAddress: "",
     config: "",
-    waitingConfig: false
+    waitingConfig: false,
+    waitingAutoLock: false
   },
   mutations: {
     setReady(state) {
@@ -120,6 +121,7 @@ const store = new Vuex.Store({
       state.waitingCardScan = false;
       state.waitingFingerScan = false;
       state.fingerScanProgress = 0;
+      state.waitingAutoLock = false;
     },
     clearErrors(state) {
       state.errors = [];
@@ -133,6 +135,9 @@ const store = new Vuex.Store({
     },
     setWaitingConfig(state, isWaiting) {
       state.waitingConfig = isWaiting;
+    },
+    setWaitingAutoLock(state, isWaiting) {
+      state.waitingAutoLock = isWaiting;
     }
   },
   actions: {
@@ -161,6 +166,11 @@ const store = new Vuex.Store({
       if (state.waiting) return;
       commit("setWaiting");
       api.pair(lockAddress);
+    },
+    async setAutoLock({state, commit}, { lockAddress, time }) {
+      if (state.setWaitingAutoLock) return;
+      commit("setWaitingAutoLock", true);
+      api.setAutoLock(lockAddress, time);
     },
     async readCredentials({ state, commit }, lockAddress) {
       if (state.waiting || state.setWaitingCredentials) return;

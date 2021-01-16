@@ -4,11 +4,11 @@
       <h1>
         {{ lock.name }}
       </h1>
-      <v-row>
+      <v-row class="mt-4" v-if="lock && lock.hasAutolock">
         <v-col>
-          <v-slider v-model="autoLockTime" class="align-center" label="Auto lock time" hint="(0 to disable)" persistent-hint max="100" min="0">
+          <v-slider v-model="autoLockTime" class="align-center" thumb-label="always" label="Auto lock time" :hint="autoLockHint" persistent-hint max="60" min="0">
             <template v-slot:append>
-              <v-text-field v-model="autoLockTime" class="mt-0 pt-0" hide-details single-line type="number" style="width: 60px"></v-text-field>
+              <v-btn color="primary" :disabled="waitingAutoLock || waitingCredentials" v-on:click="saveAutoLock"> Save </v-btn>
             </template>
           </v-slider>
         </v-col>
@@ -158,7 +158,7 @@
     <Card :address="address" v-model="editCard" :show="showEditCard" v-on:cancel="cancelEditCardDialog"></Card>
     <Finger :address="address" v-model="editFinger" :show="showEditFinger" v-on:cancel="cancelEditFingerDialog"></Finger>
     <ConfirmDlg ref="confirm" />
-    <v-snackbar v-model="hasErrors" :vertical="vertical" color="red">
+    <v-snackbar v-model="hasErrors" :vertical="true" :timeout="-1" color="red">
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title v-for="error of errors" :key="error.message">{{ error.message }}</v-list-item-title>
@@ -213,8 +213,11 @@ export default {
       }
       return {};
     },
-    storeIsWaiting() {
+    waitingCredentials() {
       return this.$store.state.waitingCredentials;
+    },
+    waitingAutoLock() {
+      return this.$store.state.waitingAutoLock;
     },
     passcodeTypeText() {
       return {
@@ -229,6 +232,12 @@ export default {
     },
     errors() {
       return this.$store.state.errors;
+    },
+    autoLockHint() {
+      return "Current value: " + this.lock.autoLockTime + " seconds (set to 0 to disable)";
+    },
+    autoLockChanged() {
+      return this.autoLockTime != this.lock.autoLockTime;
     },
   },
   created() {
@@ -248,6 +257,9 @@ export default {
   methods: {
     dateTime(str) {
       return moment(str, "YYYYMMDDHHmm").format("DD-MM-YYYY HH:mm");
+    },
+    saveAutoLock() {
+      this.$store.dispatch("setAutoLock", { lockAddress: this.lock.address, time: this.autoLockTime });
     },
     showEditPasscodeDialog(passcode) {
       if (typeof passcode != "undefined") {
@@ -320,7 +332,7 @@ export default {
     },
   },
   watch: {
-    storeIsWaiting(newVal) {
+    waitingCredentials(newVal) {
       if (newVal === false) {
         this.passcodes = this.$store.state.passcodes[this.address];
         this.cards = this.$store.state.cards[this.address];

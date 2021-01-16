@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.17] - 2020-01-16
+- Auto-lock management
+
 ## [0.2.16] - 2020-01-16
 - Basic config editing UI for saving/restoring lock pairing data
 - Option for communication debug (`debug_communication: true` in config)

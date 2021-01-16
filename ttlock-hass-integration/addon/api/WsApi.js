@@ -46,6 +46,15 @@ class WsApi {
     }
   }
 
+  async sendAutoLockSet(address) {
+    const message = new Message();
+    message.setType("autolock");
+    message.setData({
+      address: address
+    });
+    this.ws.send(message.toJSON());
+  }
+
   async sendCredentials(address, credentials) {
     const message = new Message();
     message.setType("credentials");

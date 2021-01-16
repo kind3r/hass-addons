@@ -18,7 +18,7 @@
         </v-btn>
       </template>
       <template v-else>
-        <v-progress-circular v-if="isWaitingCredentials" indeterminate color="primary"></v-progress-circular>
+        <v-progress-circular v-if="isWaitingCredentials || isWaitingAutoLock" indeterminate color="primary"></v-progress-circular>
         <v-btn v-else icon v-on:click="refreshCredentials" title="Refresh credentials">
           <v-icon>mdi-sync</v-icon>
         </v-btn>
@@ -70,7 +70,10 @@ export default {
     },
     isWaitingCredentials() {
       return this.$store.state.waitingCredentials;
-    }
+    },
+    isWaitingAutoLock() {
+      return this.$store.state.waitingAutoLock;
+    },
   },
   methods: {
     goHome() {

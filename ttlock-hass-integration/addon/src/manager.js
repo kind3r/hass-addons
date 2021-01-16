@@ -217,6 +217,22 @@ class Manager extends EventEmitter {
     return false;
   }
 
+  async setAutoLock(address, value) {
+    const lock = this.pairedLocks.get(address);
+    if (typeof lock != "undefined") {
+      if (!(await this._connectLock(lock))) {
+        return false;
+      }
+      try {
+        const res = await lock.setAutoLockTime(value);
+        return res;
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    return false;
+  }
+
   async getCredentials(address) {
     const passcodes = await this.getPasscodes(address);
     const cards = await this.getCards(address);

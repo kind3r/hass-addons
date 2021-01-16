@@ -12,8 +12,6 @@
   - failure to read all credentials
   - failure to discover paired locks at startup
 - Unable to edit fingerprint validity inteval
-- Cannot set autolock time
-- Can't save or edit the locks secret store file in order to migrate to another installation (but this can be achieved via HA's snapshots feature)
 
 ## Gateway options
 
