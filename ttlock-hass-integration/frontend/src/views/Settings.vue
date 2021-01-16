@@ -4,7 +4,7 @@
       <h1>
         {{ lock.name }}
       </h1>
-      <v-row class="mt-4" v-if="lock && lock.hasAutolock">
+      <v-row class="mt-4" v-if="lock && lock.hasAutoLock">
         <v-col>
           <v-slider v-model="autoLockTime" class="align-center" thumb-label="always" label="Auto lock time" :hint="autoLockHint" persistent-hint max="60" min="0">
             <template v-slot:append>
