@@ -493,7 +493,7 @@ class Manager extends EventEmitter {
       for (let [address, lock] of this.pairedLocks) {
         console.log("Auto connect to", address);
         const result = await lock.connect();
-        if (result) {
+        if (result === true) {
           console.log("Successful connect attempt to paired lock", address);
           this.connectQueue.delete(address);
         } else {
@@ -549,21 +549,17 @@ class Manager extends EventEmitter {
    * @param {import('ttlock-sdk-js').TTLock} lock 
    */
   async _onUpdatedLock(lock) {
-    let listChanged = false;
     if (lock.isPaired() && !this.pairedLocks.has(lock.getAddress())) {
       this._bindLockEvents(lock);
       // add it to the list of known locks
       console.log("Discovered paired lock:", lock.toJSON());
       this.pairedLocks.set(lock.getAddress(), lock);
-      listChanged = true;
-      if (this.scanType == ScanType.NONE) {
-        // if this was not updated during scanning, simulate a connect to push info to HA
-        this.emit("lockConnected", lock);
-      }
-    }
-
-    if (listChanged) {
       this.emit("lockListChanged");
+    }
+    if (lock.isPaired() && this.scanType == ScanType.NONE) {
+      // if this was not updated during scanning (which performs a reconnect after), 
+      // simulate a connect to push info to HA and UI
+      this.emit("lockConnected", lock);
     }
   }
 

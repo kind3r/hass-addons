@@ -1,7 +1,7 @@
 'use stricet';
 
 const mqtt = require('async-mqtt');
-const store = require('./store');
+const manager = require('./manager');
 const { LockedStatus } = require('ttlock-sdk-js');
 
 class HomeAssistant {
@@ -14,10 +14,7 @@ class HomeAssistant {
    * @param {string} options.mqttPass 
    * @param {string} options.discovery_prefix 
    */
-  constructor(manager, options) {
-    console.info("Setting up Home Assistant MQTT connection");
-
-    this.manager = manager;
+  constructor(options) {
     this.mqttUrl = options.mqttUrl;
     this.mqttUser = options.mqttUser;
     this.mqttPass = options.mqttPass;
@@ -26,10 +23,10 @@ class HomeAssistant {
 
     this.connected = false;
 
-    this.manager.on("lockPaired", this._onLockPaired.bind(this));
-    this.manager.on("lockConnected", this._onLockConnected.bind(this));
-    this.manager.on("lockUnlock", this._onLockUnlock.bind(this));
-    this.manager.on("lockLock", this._onLockLock.bind(this));
+    manager.on("lockPaired", this._onLockPaired.bind(this));
+    manager.on("lockConnected", this._onLockConnected.bind(this));
+    manager.on("lockUnlock", this._onLockUnlock.bind(this));
+    manager.on("lockLock", this._onLockLock.bind(this));
   }
 
   async connect() {
@@ -213,10 +210,10 @@ class HomeAssistant {
       }
       switch (command) {
         case "LOCK":
-          this.manager.lockLock(address);
+          manager.lockLock(address);
           break;
         case "UNLOCK":
-          this.manager.unlockLock(address);
+          manager.unlockLock(address);
           break;
       }
     } else if (process.env.MQTT_DEBUG == "1") {

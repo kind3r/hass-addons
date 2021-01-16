@@ -22,7 +22,7 @@ const HomeAssistant = require('./ha');
  * @param {string} options.gateway_pass  Gateway password
  */
 module.exports = async (options) => {
-  console.log("Options:", JSON.stringify(options));
+  // console.log("Options:", JSON.stringify(options));
   if (typeof options == "undefined") {
     options = {};
   }
@@ -53,8 +53,7 @@ module.exports = async (options) => {
       mqttUser: options.mqttUser,
       mqttPass: options.mqttPass
     }
-    console.log(JSON.stringify(haOptions));
-    ha = new HomeAssistant(manager, haOptions);
+    ha = new HomeAssistant(haOptions);
     await ha.connect();
   }
 
