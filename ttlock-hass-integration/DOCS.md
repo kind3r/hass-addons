@@ -37,6 +37,7 @@ Sometimes the lock just does not want to send the right CRC even tho the packet 
 
 ```yaml
 ignore_crc: true // ignore bad CRC in responses from lock
+debug_communication: true // log BLE communication messages to and from the lock
 debug_mqtt: true // log MQTT messages sent and received
 ```
 

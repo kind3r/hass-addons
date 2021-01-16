@@ -1,7 +1,8 @@
 # Changelog
 
-## [0.2.15] - 2020-01-16
+## [0.2.16] - 2020-01-16
 - Basic config editing UI for saving/restoring lock pairing data
+- Option for communication debug (`debug_communication: true` in config)
 
 ## [0.2.12] - 2020-01-16
 - Persist device state between HA restarts

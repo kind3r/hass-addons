@@ -19,6 +19,10 @@ if $(bashio::config.equals "gateway" "noble"); then
   echo "Disable noble auto-binding"
   export NOBLE_WEBSOCKET=1
 fi
+if $(bashio::config.true "debug_communication"); then
+  echo "Debug communication ON"
+  export TTLOCK_DEBUG_COMM=1
+fi
 if $(bashio::config.true "debug_mqtt"); then
   echo "Debug MQTT"
   export MQTT_DEBUG=1
