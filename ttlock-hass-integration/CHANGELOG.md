@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.20] - 2020-01-17
+- Bump SDK for stability fixes
+
 ## [0.2.19] - 2020-01-16
 - Auto-lock management
 
