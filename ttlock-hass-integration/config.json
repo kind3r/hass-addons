@@ -1,6 +1,6 @@
 {
   "name": "TTLock",
-  "version": "0.2.23",
+  "version": "0.2.24",
   "slug": "ttlock-hass-integration",
   "description": "Integration of the offline TTLock SDK into Home Assistant",
   "url": "https://github.com/kind3r/hass-addons",
@@ -30,7 +30,8 @@
     "gateway_pass": "str?",
     "ignore_crc": "bool?",
     "debug_communication": "bool?",
-    "debug_mqtt": "bool?"
+    "debug_mqtt": "bool?",
+    "gateway_debug": "bool?"
   }, 
   "arch": ["amd64", "armv7", "armhf", "i386" , "aarch64"]
 }

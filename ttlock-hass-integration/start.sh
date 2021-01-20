@@ -27,6 +27,10 @@ if $(bashio::config.true "debug_mqtt"); then
   echo "Debug MQTT"
   export MQTT_DEBUG=1
 fi
+if $(bashio::config.true "gateway_debug"); then
+  echo "Debug gateway"
+  export WEBSOCKET_DEBUG=1
+fi
 
 cd /app
 npm start

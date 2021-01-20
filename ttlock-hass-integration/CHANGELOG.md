@@ -1,8 +1,9 @@
 # Changelog
 
-## [0.2.23] - 2020-01-20
+## [0.2.24] - 2020-01-20
 - Bump SDK for switch feature fix and remote unlock error during pairing
 - Stop scan after a new unpaired lock is found
+- Option to debug gateway messages (`gateway_debug: true` in config)
 
 ## [0.2.21] - 2020-01-17
 - Bump SDK for stability fixes
