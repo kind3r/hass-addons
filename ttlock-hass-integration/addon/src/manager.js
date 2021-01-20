@@ -550,6 +550,8 @@ class Manager extends EventEmitter {
         console.log("Discovered new lock:", lock.toJSON());
         this.newLocks.set(lock.getAddress(), lock);
         listChanged = true;
+        console.log("New lock found, stopping scan");
+        await this.stopScan();
       }
     } else {
       console.log("Discovered unknown lock:", lock.toJSON());

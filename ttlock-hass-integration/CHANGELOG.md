@@ -1,7 +1,8 @@
 # Changelog
 
-## [0.2.22] - 2020-01-20
-- Bump SDK for switch feature fix
+## [0.2.23] - 2020-01-20
+- Bump SDK for switch feature fix and remote unlock error during pairing
+- Stop scan after a new unpaired lock is found
 
 ## [0.2.21] - 2020-01-17
 - Bump SDK for stability fixes
