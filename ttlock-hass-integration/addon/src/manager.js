@@ -80,7 +80,8 @@ class Manager extends EventEmitter {
         this.client.on("ready", () => {
           // should not trigger if prepareBTService emits it
           // but useful for when websocket reconnects
-          this.startScan(ScanType.AUTOMATIC);
+          // disable it for now as the reconnection won't re-trigger ready
+          // this.startScan(ScanType.AUTOMATIC);
         });
         this.client.on("foundLock", this._onFoundLock.bind(this));
         this.client.on("updatedLock", this._onUpdatedLock.bind(this));

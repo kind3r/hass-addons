@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.25] - 2020-01-21
+- Bump SDK for fixing gateway disconnection issues
+
 ## [0.2.24] - 2020-01-20
 - Bump SDK for switch feature fix and remote unlock error during pairing
 - Stop scan after a new unpaired lock is found

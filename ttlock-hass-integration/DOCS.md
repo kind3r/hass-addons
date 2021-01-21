@@ -15,7 +15,7 @@
 
 ## Gateway options
 
-If your HA host does not have a Bluetooth adapter, you can use another computer/PI as a gateway.  
+If your HA host does not have a Bluetooth adapter, you can use another computer/PI/ESP32 (in the near future) as a gateway. This is not related to the TTLock G2 gateway.  
 
 Use the Configure tab to specify gateway options:
 ```yaml
