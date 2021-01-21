@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.27] - 2020-01-21
+## [0.2.28] - 2020-01-21
 - Bump SDK for fixing gateway disconnection issues
 
 ## [0.2.24] - 2020-01-20
