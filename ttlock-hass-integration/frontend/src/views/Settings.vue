@@ -270,10 +270,11 @@ export default {
     async showDeletePasscodeDialog(passcode) {
       if (typeof passcode != "undefined") {
         if (await this.$refs.confirm.open("Confirm", "Are you sure you want to delete this PIN ?")) {
-          passcode.newPassCode = -1;
+          let p = JSON.parse(JSON.stringify(passcode));
+          p.newPassCode = -1;
           this.$store.dispatch("setPasscode", {
             lockAddress: this.address,
-            passcode: passcode,
+            passcode: p,
           });
           this.passcodes = -1;
         }
