@@ -27,6 +27,7 @@ class HomeAssistant {
     manager.on("lockConnected", this._onLockConnected.bind(this));
     manager.on("lockUnlock", this._onLockUnlock.bind(this));
     manager.on("lockLock", this._onLockLock.bind(this));
+    manager.on("lockUpdated", this._onLockUpdated.bind(this));
   }
 
   async connect() {
@@ -181,6 +182,13 @@ class HomeAssistant {
    * @param {import('ttlock-sdk-js').TTLock} lock 
    */
   async _onLockLock(lock) {
+    await this.updateLockState(lock);
+  }
+
+  /**
+   * @param {import('ttlock-sdk-js').TTLock} lock 
+   */
+  async _onLockUpdated(lock) {
     await this.updateLockState(lock);
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "ttlock-hass-integration-frontend",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "author": "Emanuel Posescu <kind3r@gmail.com>",
   "scripts": {
     "serve": "vue-cli-service serve",
