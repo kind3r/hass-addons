@@ -13,6 +13,7 @@ Feeling generous and want to support my work, here is [my PayPal link](https://p
   - Pair new lock
   - Lock / unlock
   - Manage auto-lock time
+  - Manage sound on/off
   - Add / edit PIN codes
   - Add / remove IC Cards
   - Add / remove fingerprints

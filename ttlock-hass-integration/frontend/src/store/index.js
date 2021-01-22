@@ -25,7 +25,8 @@ const store = new Vuex.Store({
     activeLockAddress: "",
     config: "",
     waitingConfig: false,
-    waitingAutoLock: false
+    waitingAutoLock: false,
+    waitingSettings: false
   },
   mutations: {
     setReady(state) {
@@ -138,6 +139,9 @@ const store = new Vuex.Store({
     },
     setWaitingAutoLock(state, isWaiting) {
       state.waitingAutoLock = isWaiting;
+    },
+    setWaitingSettings(state, isWaiting) {
+      state.waitingSettings = isWaiting;
     }
   },
   actions: {
@@ -167,7 +171,7 @@ const store = new Vuex.Store({
       commit("setWaiting");
       api.pair(lockAddress);
     },
-    async setAutoLock({state, commit}, { lockAddress, time }) {
+    async setAutoLock({ state, commit }, { lockAddress, time }) {
       if (state.setWaitingAutoLock) return;
       commit("setWaitingAutoLock", true);
       api.setAutoLock(lockAddress, time);
@@ -193,17 +197,22 @@ const store = new Vuex.Store({
       commit("setWaitingCredentials");
       api.setFinger(lockAddress, finger);
     },
-    async loadConfig({state, commit}) {
+    async loadConfig({ state, commit }) {
       if (state.waitingConfig) return;
       commit("setConfig", "");
       commit("setWaitingConfig", true);
       api.loadConfig();
     },
-    async saveConfig({state, commit}, config) {
+    async saveConfig({ state, commit }, config) {
       if (state.waitingConfig) return;
       commit("setConfig", "");
       commit("setWaitingConfig", true);
       api.saveConfig(config);
+    },
+    async saveSettings({ state, commit }, { lockAddress, settings }) {
+      if (state.waitingSetings) return;
+      commit("setWaitingSettings", true);
+      api.saveSettings(lockAddress, settings);
     }
   }
 });

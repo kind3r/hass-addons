@@ -46,15 +46,6 @@ class WsApi {
     }
   }
 
-  async sendAutoLockSet(address) {
-    const message = new Message();
-    message.setType("autolock");
-    message.setData({
-      address: address
-    });
-    this.ws.send(message.toJSON());
-  }
-
   async sendCredentials(address, credentials) {
     const message = new Message();
     message.setType("credentials");
@@ -120,6 +111,15 @@ class WsApi {
     message.setType("fingerScanProgress");
     message.setData({
       address: address,
+    });
+    this.ws.send(message.toJSON());
+  }
+
+  async sendSettingsConfirmation(address, settings) {
+    const message = new Message();
+    message.setType("settings");
+    message.setData({
+      settings: settings
     });
     this.ws.send(message.toJSON());
   }

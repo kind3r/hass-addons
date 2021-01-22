@@ -25,6 +25,7 @@ module.exports = async (server) => {
   manager.on("lockConnected", sendLockStatusUpdate);
   manager.on("lockLock", sendLockStatusUpdate);
   manager.on("lockUnlock", sendLockStatusUpdate);
+  manager.on("lockUpdated", sendLockStatusUpdate);
   manager.on("scanStart", sendStatusUpdate);
   manager.on("scanStop", sendStatusUpdate);
 
@@ -79,20 +80,6 @@ module.exports = async (server) => {
                 const lock = locks.get(msg.data.address);
                 if (lock) {
                   WsApi.sendLockStatus(wss, lock);
-                }
-              }
-            }
-            break;
-
-          case "autolock":
-            if (msg.data && msg.data.address) {
-              if (typeof msg.data.time != "undefined") {
-                const res = await manager.setAutoLock(msg.data.address, parseInt(msg.data.time));
-                if (res === true) {
-                  await sendStatusUpdate();
-                  api.sendAutoLockSet(msg.data.addres);
-                } else {
-                  api.sendError("Unable to set auto-lock time", msg);
                 }
               }
             }
@@ -204,6 +191,29 @@ module.exports = async (server) => {
             }
             break;
 
+          case "settings":
+            if (msg.data && msg.data.address && msg.data.settings) {
+              const settings = msg.data.settings;
+              let confirmedSettings = {};
+
+              if (typeof settings.autolock != "undefined") {
+                confirmedSettings.autolock = await manager.setAutoLock(msg.data.address, parseInt(settings.autolock));
+                if (confirmedSettings.autolock !== true) {
+                  api.sendError("Unable to set auto-lock time", msg);
+                }
+              }
+
+              if (typeof settings.audio != "undefined") {
+                confirmedSettings.audio = await manager.setAudio(msg.data.address, settings.audio);
+                if (confirmedSettings.audio !== true) {
+                  api.sendError("Failed to set audio mode", msg);
+                }
+              }
+
+              api.sendSettingsConfirmation(msg.data.address, confirmedSettings);
+            }
+            break;
+            
           case "config":
             if (msg.data) {
               if (msg.data.get) {

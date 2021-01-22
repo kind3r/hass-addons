@@ -3,7 +3,7 @@
 /**
  * @typedef {'status'|'scan'|'pair'|'lock'|'unlock'|'lockStatus'
  * |'credentials'|'passcode'|'card'|'finger'|'error'|'config'
- * |'autolock'} MessageType
+ * |'settings'} MessageType
  */
 
 class Message {

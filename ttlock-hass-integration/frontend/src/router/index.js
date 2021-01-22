@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Settings from '../views/Settings.vue';
+import Credentials from '../views/Credentials.vue';
 
 Vue.use(VueRouter)
 
@@ -15,6 +16,11 @@ const routes = [
     path: '/settings/:address',
     name: 'Settings',
     component: Settings
+  },
+  {
+    path: '/credentials/:address',
+    name: 'Credentials',
+    component: Credentials
   }
 ]
 

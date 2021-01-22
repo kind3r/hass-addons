@@ -17,8 +17,8 @@
           <v-icon>mdi-sync</v-icon>
         </v-btn>
       </template>
-      <template v-else>
-        <v-progress-circular v-if="isWaitingCredentials || isWaitingAutoLock" indeterminate color="primary"></v-progress-circular>
+      <template v-else-if="isCredentials">
+        <v-progress-circular v-if="isWaitingCredentials" indeterminate color="primary"></v-progress-circular>
         <v-btn v-else icon v-on:click="refreshCredentials" title="Refresh credentials">
           <v-icon>mdi-sync</v-icon>
         </v-btn>
@@ -28,16 +28,19 @@
     <v-main>
       <router-view></router-view>
       <ConfigDlg :show="showConfigDialog" v-on:cancel="hideConfigDialog"></ConfigDlg>
+      <Errors></Errors>
     </v-main>
   </v-app>
 </template>
 
 <script>
 import ConfigDlg from "@/components/ConfigDlg";
+import Errors from "@/components/Errors";
 
 export default {
   components: {
-    ConfigDlg
+    ConfigDlg,
+    Errors
   },
   data: function() {
     return {
@@ -61,6 +64,9 @@ export default {
     },
     isHome() {
       return this.$route.name == "Home";
+    },
+    isCredentials() {
+      return this.$route.name == "Credentials";
     },
     isSettings() {
       return this.$route.name == "Settings";

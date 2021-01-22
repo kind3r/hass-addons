@@ -139,6 +139,16 @@ class Api {
     }));
   }
 
+  async saveSettings(address, settings) {
+    this.ws.send(JSON.stringify({
+      type: "settings",
+      data: {
+        address: address,
+        settings: settings
+      }
+    }));
+  }
+
   async _onMessage(messageEvent) {
     try {
       const message = JSON.parse(messageEvent.data);
@@ -182,6 +192,9 @@ class Api {
             break;
           case "fingerScanProgress":
             this.store.commit("setFingerScanProgress");
+            break;
+          case "settings":
+            this.store.commit("setWaitingSettings", false);
             break;
           case "error":
             this.store.commit("setError", message.data);

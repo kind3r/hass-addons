@@ -1,5 +1,7 @@
 'use strict';
 
+const { AudioManage } = require('ttlock-sdk-js');
+
 class Lock {
   /** @type {string} MAC address */
   address;
@@ -17,6 +19,8 @@ class Lock {
   locked;
   /** @type {number} The number of seconds the lock will auto lock after being unlocked */
   autoLockTime;
+  /** @type {boolean} If the lock's audio is enabled or not */
+  audio;
   /** @type {boolean} If the lock has auto-lock feature */
   hasAutoLock;
   /** @type {boolean} If the lock has a keypad and supports passcodes (PIN) */
@@ -25,6 +29,8 @@ class Lock {
   hasCard;
   /** @type {boolean} If the lock has fingerprint reader support */
   hasFinger;
+  /** @type {boolean} If the lock has audio management */
+  hasAudio;
 
   /**
    * 
@@ -42,6 +48,7 @@ class Lock {
     try {
       lock.autoLockTime = await lockObject.getAutolockTime();
       lock.locked = await lockObject.getLockStatus();
+      lock.audio  = (await lockObject.getLockSound()) == AudioManage.TURN_ON ? true : false;
     } catch (error) {
       // new locks don't have this data
     }
@@ -49,6 +56,7 @@ class Lock {
     lock.hasPasscode = lockObject.hasPassCode();
     lock.hasCard = lockObject.hasICCard();
     lock.hasFinger = lockObject.hasFingerprint();
+    lock.hasAudio = lockObject.hasLockSound();
 
     return lock;
   }

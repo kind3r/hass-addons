@@ -2,6 +2,7 @@
 
 const EventEmitter = require('events');
 const store = require("./store");
+const { TTLockClient, AudioManage } = require("ttlock-sdk-js");
 
 const ScanType = Object.freeze({
   NONE: 0,
@@ -58,8 +59,6 @@ class Manager extends EventEmitter {
   async init() {
     if (typeof this.client == "undefined") {
       try {
-        const { TTLockClient, sleep } = require("ttlock-sdk-js");
-
         let clientOptions = {}
 
         if (this.gateway == "noble") {
@@ -473,6 +472,26 @@ class Manager extends EventEmitter {
     return false;
   }
 
+  async setAudio(address, audio) {
+    const lock = this.pairedLocks.get(address);
+    if (typeof lock != "undefined") {
+      if (!lock.hasLockSound()) {
+        return false;
+      }
+      if (!(await this._connectLock(lock))) {
+        return false;
+      }
+      try {
+        const sound = audio == true ? AudioManage.TURN_ON : AudioManage.TURN_OFF;
+        const res = await lock.setLockSound(sound);
+        return res;
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    return false;
+  }
+
   /**
    * 
    * @param {import('ttlock-sdk-js').TTLock} lock 
@@ -591,6 +610,7 @@ class Manager extends EventEmitter {
     lock.on("disconnected", this._onLockDisconnected.bind(this));
     lock.on("locked", this._onLockLocked.bind(this));
     lock.on("unlocked", this._onLockUnlocked.bind(this));
+    lock.on("lockUpdated", () => this.emit("lockUpdated", lock));
     lock.on("scanICStart", () => this.emit("lockCardScan", lock));
     lock.on("scanFRStart", () => this.emit("lockFingerScan", lock));
     lock.on("scanFRProgress", () => this.emit("lockFingerScanProgress", lock));
