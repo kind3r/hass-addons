@@ -11,7 +11,7 @@ process.on('uncaughtException', (error, promise) => {
 const init = require("./src/init");
 init({
  // options go here
-//  settingsPath: "lockData.json"
+  settingsPath: process.env.DATA_PATH || "/data",
   mqttHost: process.env.MQTT_HOST,
   mqttPort: process.env.MQTT_PORT,
   mqttSSL: process.env.MQTT_SSL,

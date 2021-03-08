@@ -141,11 +141,11 @@ module.exports = async (server) => {
               const card = msg.data.card;
               let res = false;
               if (card.cardNumber == -1) { // add new card
-                res = await manager.addCard(msg.data.address, card.startDate, card.endDate);
+                res = await manager.addCard(msg.data.address, card.startDate, card.endDate, card.alias);
               } else if (card.startDate == -1) { // delete
                 res = await manager.deleteCard(msg.data.address, card.cardNumber);
               } else { // update
-                res = await manager.updateCard(msg.data.address, card.cardNumber, card.startDate, card.endDate);
+                res = await manager.updateCard(msg.data.address, card.cardNumber, card.startDate, card.endDate, card.alias);
               }
               if (res === false || res == "") { // notify failure
                 api.sendError("Card operation failed", msg);
@@ -171,11 +171,11 @@ module.exports = async (server) => {
               const finger = msg.data.finger;
               let res = false;
               if (finger.fpNumber == -1) { // add new finger
-                res = await manager.addFinger(msg.data.address, finger.startDate, finger.endDate);
+                res = await manager.addFinger(msg.data.address, finger.startDate, finger.endDate, finger.alias);
               } else if (finger.startDate == -1) { // delete
                 res = await manager.deleteFinger(msg.data.address, finger.fpNumber);
               } else { // update
-                res = await manager.updateFinger(msg.data.address, finger.fpNumber, finger.startDate, finger.endDate);
+                res = await manager.updateFinger(msg.data.address, finger.fpNumber, finger.startDate, finger.endDate, finger.alias);
               }
               if (res === false || res == "") { // notify failure
                 api.sendError("Fingerprint operation failed", msg);

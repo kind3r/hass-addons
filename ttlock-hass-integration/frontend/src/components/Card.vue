@@ -12,6 +12,11 @@
         </v-card-title>
         <v-card-text>
           <v-container>
+            <v-row>
+              <v-col cols="12" class="mb-3">
+                <v-text-field hint="A name so you can identify this card" persistent-hint prepend-icon="mdi-label" label="Alias" v-model="alias"></v-text-field>
+              </v-col>
+            </v-row>
             <v-row no-gutters>
               <v-col cols="6" sm="3">
                 <v-menu v-model="startDateMenu" :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y min-width="290px">
@@ -97,6 +102,7 @@ export default {
       endDate: "",
       endTimeMenu: false,
       endTime: "",
+      alias: "",
       busy: false,
     };
   },
@@ -106,7 +112,7 @@ export default {
     },
     lockIsScanning() {
       return this.$store.state.waitingCardScan;
-    }
+    },
   },
   methods: {
     updateCard(card) {
@@ -115,6 +121,7 @@ export default {
           cardNumber: -1,
           startDate: "200001010000",
           endDate: "209912012359",
+          alias: ""
         };
       } else {
         this.card = JSON.parse(JSON.stringify(card));
@@ -125,6 +132,7 @@ export default {
       this.busy = true;
       this.card.startDate = this.startDate.split("-").join("") + this.startTime.split(":").join("");
       this.card.endDate = this.endDate.split("-").join("") + this.endTime.split(":").join("");
+      this.card.alias = this.alias;
       await this.$store.dispatch("setCard", {
         lockAddress: this.address,
         card: this.card,
@@ -152,6 +160,7 @@ export default {
       const endDate = moment(newVal.endDate, "YYYYMMDDHHmm");
       this.endDate = endDate.format("YYYY-MM-DD");
       this.endTime = endDate.format("HH:mm");
+      this.alias = newVal.alias;
     },
   },
 };

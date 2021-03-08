@@ -1,6 +1,6 @@
 {
   "name": "ttlock-hass-integration",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Integration of the offline TTLock sdk into Home Assistant",
   "main": "index.js",
   "scripts": {

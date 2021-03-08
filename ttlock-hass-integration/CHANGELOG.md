@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.3.1] - 2021-03-08
+- Add aliases (friendly names) to cards and fingerprints
+
 ## [0.3.0] - 2021-01-22
 - New layout separating settings and credentials
 - Manage lock sound

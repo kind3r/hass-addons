@@ -320,7 +320,7 @@ class Manager extends EventEmitter {
     return false;
   }
 
-  async addCard(address, startDate, endDate) {
+  async addCard(address, startDate, endDate, alias) {
     const lock = this.pairedLocks.get(address);
     if (typeof lock != "undefined") {
       if (!lock.hasICCard()) {
@@ -331,6 +331,7 @@ class Manager extends EventEmitter {
       }
       try {
         const card = await lock.addICCard(startDate, endDate);
+        store.setCardAlias(card, alias);
         return card;
       } catch (error) {
         console.error(error);
@@ -339,7 +340,7 @@ class Manager extends EventEmitter {
     return false;
   }
 
-  async updateCard(address, card, startDate, endDate) {
+  async updateCard(address, card, startDate, endDate, alias) {
     const lock = this.pairedLocks.get(address);
     if (typeof lock != "undefined") {
       if (!lock.hasICCard()) {
@@ -350,6 +351,7 @@ class Manager extends EventEmitter {
       }
       try {
         const result = await lock.updateICCard(card, startDate, endDate);
+        store.setCardAlias(card, alias);
         return result;
       } catch (error) {
         console.error(error);
@@ -369,6 +371,7 @@ class Manager extends EventEmitter {
       }
       try {
         const result = await lock.deleteICCard(card);
+        store.deleteCardAlias(card);
         return result;
       } catch (error) {
         console.error(error);
@@ -387,7 +390,12 @@ class Manager extends EventEmitter {
         return false;
       }
       try {
-        const cards = await lock.getICCards();
+        let cards = await lock.getICCards();
+        if (cards.length > 0) {
+          for (let card of cards) {
+            card.alias = store.getCardAlias(card.cardNumber);
+          }
+        }
         return cards;
       } catch (error) {
         console.error(error);
@@ -396,7 +404,7 @@ class Manager extends EventEmitter {
     return false;
   }
 
-  async addFinger(address, startDate, endDate) {
+  async addFinger(address, startDate, endDate, alias) {
     const lock = this.pairedLocks.get(address);
     if (typeof lock != "undefined") {
       if (!lock.hasFingerprint()) {
@@ -406,8 +414,9 @@ class Manager extends EventEmitter {
         return false;
       }
       try {
-        const card = await lock.addFingerprint(startDate, endDate);
-        return card;
+        const finger = await lock.addFingerprint(startDate, endDate);
+        store.setFingerAlias(finger, alias);
+        return finger;
       } catch (error) {
         console.error(error);
       }
@@ -415,7 +424,7 @@ class Manager extends EventEmitter {
     return false;
   }
 
-  async updateFinger(address, finger, startDate, endDate) {
+  async updateFinger(address, finger, startDate, endDate, alias) {
     const lock = this.pairedLocks.get(address);
     if (typeof lock != "undefined") {
       if (!lock.hasFingerprint()) {
@@ -426,6 +435,7 @@ class Manager extends EventEmitter {
       }
       try {
         const result = await lock.updateFingerprint(finger, startDate, endDate);
+        store.setFingerAlias(finger, alias);
         return result;
       } catch (error) {
         console.error(error);
@@ -445,6 +455,7 @@ class Manager extends EventEmitter {
       }
       try {
         const result = await lock.deleteFingerprint(finger);
+        store.deleteFingerAlias(finger);
         return result;
       } catch (error) {
         console.error(error);
@@ -463,8 +474,13 @@ class Manager extends EventEmitter {
         return false;
       }
       try {
-        const cards = await lock.getFingerprints();
-        return cards;
+        let fingers = await lock.getFingerprints();
+        if (fingers.length > 0) {
+          for (let finger of fingers) {
+            finger.alias = store.getFingerAlias(finger.fpNumber);
+          }
+        }
+        return fingers;
       } catch (error) {
         console.error(error);
       }

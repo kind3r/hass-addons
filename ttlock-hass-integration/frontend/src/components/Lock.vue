@@ -1,7 +1,6 @@
 <template>
   <v-card :loading="busy">
     <v-card-title>
-      <v-icon :title="lock.address">mdi-lan</v-icon>
       {{ lock.name }}
       <v-spacer></v-spacer>
       <span class="subtitle-2">

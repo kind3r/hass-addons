@@ -12,6 +12,11 @@
         </v-card-title>
         <v-card-text>
           <v-container>
+            <v-row>
+              <v-col cols="12" class="mb-3">
+                <v-text-field hint="A name so you can identify this finger" persistent-hint prepend-icon="mdi-label" label="Alias" v-model="alias"></v-text-field>
+              </v-col>
+            </v-row>
             <v-row no-gutters>
               <v-col cols="6" sm="3">
                 <v-menu v-model="startDateMenu" :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y min-width="290px">
@@ -102,6 +107,7 @@ export default {
       endDate: "",
       endTimeMenu: false,
       endTime: "",
+      alias: "",
       busy: false,
     };
   },
@@ -123,6 +129,7 @@ export default {
           fpNumber: -1,
           startDate: "200001010000",
           endDate: "209912012359",
+          alias: ""
         };
       } else {
         this.finger = JSON.parse(JSON.stringify(finger));
@@ -133,6 +140,7 @@ export default {
       this.busy = true;
       this.finger.startDate = this.startDate.split("-").join("") + this.startTime.split(":").join("");
       this.finger.endDate = this.endDate.split("-").join("") + this.endTime.split(":").join("");
+      this.finger.alias = this.alias;
       await this.$store.dispatch("setFinger", {
         lockAddress: this.address,
         finger: this.finger,
@@ -160,6 +168,7 @@ export default {
       const endDate = moment(newVal.endDate, "YYYYMMDDHHmm");
       this.endDate = endDate.format("YYYY-MM-DD");
       this.endTime = endDate.format("HH:mm");
+      this.alias = newVal.alias;
     },
   },
 };

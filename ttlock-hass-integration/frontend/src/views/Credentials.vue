@@ -11,7 +11,7 @@
           <v-toolbar dense>
             <v-toolbar-title>
               <v-icon>mdi-gesture-tap</v-icon>
-              Keyboard PIN codes
+              Keyboard PIN
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-progress-circular v-if="passcodes == -1" indeterminate color="primary"></v-progress-circular>
@@ -41,10 +41,10 @@
                   <td>{{ dateTime(passcode.startDate) }}</td>
                   <td>{{ dateTime(passcode.endDate) }}</td>
                   <td class="text-right">
-                    <v-btn class="mx-2" fab dark small color="blue" v-on:click="showEditPasscodeDialog(passcode)" title="Change PIN">
+                    <v-btn class="mx-2" fab dark small elevation="1" color="blue" v-on:click="showEditPasscodeDialog(passcode)" title="Change PIN">
                       <v-icon dark> mdi-pencil </v-icon>
                     </v-btn>
-                    <v-btn class="mx-2" fab dark small color="red" v-on:click="showDeletePasscodeDialog(passcode)" title="Delete PIN">
+                    <v-btn class="mx-2" fab dark small elevation="1" color="red" v-on:click="showDeletePasscodeDialog(passcode)" title="Delete PIN">
                       <v-icon dark> mdi-delete </v-icon>
                     </v-btn>
                   </td>
@@ -65,7 +65,7 @@
             <v-progress-circular v-if="cards == -1" indeterminate color="primary"></v-progress-circular>
             <v-btn color="primary" v-else v-on:click="showEditCardDialog()">
               <v-icon>mdi-key-plus</v-icon>
-              Add IC Card
+              Add Card
             </v-btn>
           </v-toolbar>
           <p v-if="cards == -1" class="text-center mt-4">Loading...</p>
@@ -81,16 +81,20 @@
               </thead>
               <tbody>
                 <tr v-for="card of cards" :key="card.cardNumber">
-                  <td>
+                  <td v-if="card.alias != card.cardNumber">
+                    <strong>{{ card.alias }}</strong><br />
+                    <span class="text-caption">{{ card.cardNumber }}</span>
+                  </td>
+                  <td v-else>
                     <strong>{{ card.cardNumber }}</strong>
                   </td>
                   <td>{{ dateTime(card.startDate) }}</td>
                   <td>{{ dateTime(card.endDate) }}</td>
                   <td class="text-right">
-                    <v-btn v-if="false" class="mx-2" fab dark small color="blue" v-on:click="showEditCardDialog(card)" title="Edit Card">
+                    <v-btn v-if="true" class="mx-2" fab dark small elevation="1" color="blue" v-on:click="showEditCardDialog(card)" title="Edit Card">
                       <v-icon dark> mdi-pencil </v-icon>
                     </v-btn>
-                    <v-btn class="mx-2" fab dark small color="red" v-on:click="showDeleteCardDialog(card)" title="Delete Card">
+                    <v-btn class="mx-2" fab dark small elevation="1" color="red" v-on:click="showDeleteCardDialog(card)" title="Delete Card">
                       <v-icon dark> mdi-delete </v-icon>
                     </v-btn>
                   </td>
@@ -127,16 +131,20 @@
               </thead>
               <tbody>
                 <tr v-for="finger of fingers" :key="finger.fpNumber">
-                  <td>
+                  <td v-if="finger.alias != finger.fpNumber">
+                    <strong>{{ finger.alias }}</strong><br />
+                    <span class="text-caption">{{ finger.fpNumber }}</span>
+                  </td>
+                  <td v-else>
                     <strong>{{ finger.fpNumber }}</strong>
                   </td>
                   <td>{{ dateTime(finger.startDate) }}</td>
                   <td>{{ dateTime(finger.endDate) }}</td>
                   <td class="text-right">
-                    <v-btn class="mx-2" fab dark small color="blue" v-on:click="showEditFingerDialog(finger)" title="Edit Finger">
+                    <v-btn class="mx-2" fab dark small elevation="1" color="blue" v-on:click="showEditFingerDialog(finger)" title="Edit Finger">
                       <v-icon dark> mdi-pencil </v-icon>
                     </v-btn>
-                    <v-btn class="mx-2" fab dark small color="red" v-on:click="showDeleteFingerDialog(finger)" title="Delete Finger">
+                    <v-btn class="mx-2" fab dark small elevation="1" color="red" v-on:click="showDeleteFingerDialog(finger)" title="Delete Finger">
                       <v-icon dark> mdi-delete </v-icon>
                     </v-btn>
                   </td>
