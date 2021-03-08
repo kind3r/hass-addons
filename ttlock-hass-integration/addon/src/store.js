@@ -43,8 +43,10 @@ class Store {
   }
 
   setCardAlias(card, alias) {
-    this.aliasData.card[card] = alias;
-    this.saveData();
+    if (typeof alias != "undefined" && alias != "") {
+      this.aliasData.card[card] = alias;
+      this.saveData();
+    }
   }
 
   getCardAlias(card) {
