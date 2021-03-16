@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.3.2] - 2021-03-16
+- Fix some bugs related to aliases when adding a new card or fingerprint
+
 ## [0.3.1] - 2021-03-08
 - Add aliases (friendly names) to cards and fingerprints
 

@@ -238,6 +238,8 @@ export default {
     showEditPasscodeDialog(passcode) {
       if (typeof passcode != "undefined") {
         this.editPasscode = passcode;
+      } else {
+        this.editPasscode = -1;
       }
       this.showEditPasscode = true;
     },
@@ -261,6 +263,8 @@ export default {
     showEditCardDialog(card) {
       if (typeof card != "undefined") {
         this.editCard = card;
+      } else {
+        this.editCard = -1;
       }
       this.showEditCard = true;
     },
@@ -283,6 +287,8 @@ export default {
     showEditFingerDialog(finger) {
       if (typeof finger != "undefined") {
         this.editFinger = finger;
+      } else {
+        this.editFinger = -1;
       }
       this.showEditFinger = true;
     },
