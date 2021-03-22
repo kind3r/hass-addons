@@ -23,6 +23,7 @@ class Store {
 
   setLockData(newData) {
     this.lockData = newData;
+    this.saveData();
   }
 
   getLockData() {

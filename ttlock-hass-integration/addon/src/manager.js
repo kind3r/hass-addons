@@ -2,7 +2,7 @@
 
 const EventEmitter = require('events');
 const store = require("./store");
-const { TTLockClient, AudioManage } = require("ttlock-sdk-js");
+const { TTLockClient, AudioManage, LockedStatus, LogOperateCategory } = require("ttlock-sdk-js");
 
 const ScanType = Object.freeze({
   NONE: 0,
@@ -37,7 +37,6 @@ class Manager extends EventEmitter {
     this.startupStatus = -1;
     this.client = undefined;
     this.scanning = false;
-    this.scanType = ScanType.NONE;
     /** @type {NodeJS.Timeout} */
     this.scanTimer = undefined;
     this.scanCounter = 0;
@@ -52,7 +51,7 @@ class Manager extends EventEmitter {
     this.gateway_host = "";
     this.gateway_port = 0;
     this.gateway_key = "";
-    this.gateway_user =  "";
+    this.gateway_user = "";
     this.gateway_pass = "";
   }
 
@@ -75,23 +74,25 @@ class Manager extends EventEmitter {
         this.client = new TTLockClient(clientOptions);
         this.updateClientLockDataFromStore();
 
-        const adapterReady = await this.client.prepareBTService();
         this.client.on("ready", () => {
           // should not trigger if prepareBTService emits it
           // but useful for when websocket reconnects
           // disable it for now as the reconnection won't re-trigger ready
           // this.startScan(ScanType.AUTOMATIC);
+          this.client.startMonitor();
         });
         this.client.on("foundLock", this._onFoundLock.bind(this));
-        this.client.on("updatedLock", this._onUpdatedLock.bind(this));
         this.client.on("scanStart", this._onScanStarted.bind(this));
         this.client.on("scanStop", this._onScanStopped.bind(this));
-        // if there are saved locks start scanning to connect to them
-        if (adapterReady && store.getLockData().length > 0) {
-          await this.startScan(ScanType.AUTOMATIC);
+        this.client.on("monitorStart", () => console.log("Monitor started"));
+        this.client.on("monitorStop", () => console.log("Monitor stopped"));
+        this.client.on("updatedLockData", this._onUpdatedLockData.bind(this));
+        const adapterReady = await this.client.prepareBTService();
+        if (adapterReady) {
+          this.startupStatus = 0;
+        } else {
+          this.startupStatus = 1;
         }
-
-        this.startupStatus = 0;
       } catch (error) {
         console.log(error);
         this.startupStatus = 1;
@@ -117,14 +118,11 @@ class Manager extends EventEmitter {
     return this.startupStatus;
   }
 
-  async startScan(scanType) {
+  async startScan() {
     if (!this.scanning) {
-      if (typeof scanType == "undefined") {
-        scanType = ScanType.MANUAL;
-      }
+      await this.client.stopMonitor();
       const res = await this.client.startScanLock();
-      if (res) {
-        this.scanType = scanType;
+      if (res == true) {
         this._scanTimer();
       }
       return res;
@@ -134,11 +132,10 @@ class Manager extends EventEmitter {
 
   async stopScan() {
     if (this.scanning) {
-      if (this.scanTimer) {
+      if (typeof this.scanTimer != "undefined") {
         clearTimeout(this.scanTimer);
         this.scanTimer = undefined;
       }
-      this.scanType = ScanType.NONE;
       return await this.client.stopScanLock();
     }
     return false;
@@ -171,8 +168,6 @@ class Manager extends EventEmitter {
         if (res != false) {
           this.pairedLocks.set(lock.getAddress(), lock);
           this.newLocks.delete(lock.getAddress());
-          store.setLockData(this.client.getLockData());
-          await store.saveData();
           this.emit("lockPaired", lock);
           return true;
         }
@@ -540,12 +535,14 @@ class Manager extends EventEmitter {
   async _onScanStopped() {
     this.scanning = false;
     console.log("BLE Scan stopped");
-    if (this.scanType == ScanType.NONE) {
-      console.log("Refreshing paired locks");
-      for (let [address, lock] of this.pairedLocks) {
+    console.log("Refreshing paired locks");
+    for (let address of this.connectQueue) {
+      if (this.pairedLocks.has(address)) {
+        let lock = this.pairedLocks.get(address);
         console.log("Auto connect to", address);
         const result = await lock.connect();
         if (result === true) {
+          await lock.disconnect();
           console.log("Successful connect attempt to paired lock", address);
           this.connectQueue.delete(address);
         } else {
@@ -553,7 +550,11 @@ class Manager extends EventEmitter {
         }
       }
     }
+
     this.emit("scanStop");
+    setTimeout(() => {
+      this.client.startMonitor();
+    }, 200);
   }
 
   /**
@@ -567,14 +568,20 @@ class Manager extends EventEmitter {
       if (!this.pairedLocks.has(lock.getAddress())) {
         this._bindLockEvents(lock);
         // add it to the list of known locks and connect it
-        console.log("Discovered paired lock:", lock.toJSON());
-        this.pairedLocks.set(lock.getAddress(), lock);
-        // add it to the connect queue
-        this.connectQueue.add(lock.getAddress());
-        // check if all known locks were found and stop scan
-        if (this.scanType == ScanType.AUTOMATIC && this.connectQueue.size >= this.client.lockData.size) {
-          console.log("All known locks found, stopping scan");
-          await this.stopScan();
+        console.log("Discovered paired lock:", lock.getAddress());
+        if (this.client.isMonitoring()) {
+          const result = await lock.connect();
+          if (result == true) {
+            console.log("Successful connect attempt to paired lock", lock.getAddress());
+            await this._processOperationLog(lock);
+          } else {
+            console.log("Unsuccessful connect attempt to paired lock", lock.getAddress());
+            this.connectQueue.add(lock.getAddress());
+          }
+          await lock.disconnect();
+        } else {
+          // add it to the connect queue
+          this.connectQueue.add(lock.getAddress());
         }
         listChanged = true;
       }
@@ -586,8 +593,10 @@ class Manager extends EventEmitter {
         console.log("Discovered new lock:", lock.toJSON());
         this.newLocks.set(lock.getAddress(), lock);
         listChanged = true;
-        console.log("New lock found, stopping scan");
-        await this.stopScan();
+        if (this.client.isScanning()) {
+          console.log("New lock found, stopping scan");
+          await this.stopScan();
+        }
       }
     } else {
       console.log("Discovered unknown lock:", lock.toJSON());
@@ -598,23 +607,8 @@ class Manager extends EventEmitter {
     }
   }
 
-  /**
-   * 
-   * @param {import('ttlock-sdk-js').TTLock} lock 
-   */
-  async _onUpdatedLock(lock) {
-    if (lock.isPaired() && !this.pairedLocks.has(lock.getAddress())) {
-      this._bindLockEvents(lock);
-      // add it to the list of known locks
-      console.log("Discovered paired lock:", lock.toJSON());
-      this.pairedLocks.set(lock.getAddress(), lock);
-      this.emit("lockListChanged");
-    }
-    if (lock.isPaired() && this.scanType == ScanType.NONE) {
-      // if this was not updated during scanning (which performs a reconnect after), 
-      // simulate a connect to push info to HA and UI
-      this.emit("lockConnected", lock);
-    }
+  async _onUpdatedLockData() {
+    store.setLockData(this.client.getLockData());
   }
 
   /**
@@ -626,7 +620,7 @@ class Manager extends EventEmitter {
     lock.on("disconnected", this._onLockDisconnected.bind(this));
     lock.on("locked", this._onLockLocked.bind(this));
     lock.on("unlocked", this._onLockUnlocked.bind(this));
-    lock.on("lockUpdated", () => this.emit("lockUpdated", lock));
+    lock.on("updated", this._onLockUpdated.bind(this));
     lock.on("scanICStart", () => this.emit("lockCardScan", lock));
     lock.on("scanFRStart", () => this.emit("lockFingerScan", lock));
     lock.on("scanFRProgress", () => this.emit("lockFingerScanProgress", lock));
@@ -638,6 +632,7 @@ class Manager extends EventEmitter {
    */
   async _onLockConnected(lock) {
     if (lock.isPaired()) {
+      this.pairedLocks.set(lock.getAddress(), lock);
       console.log("Connected to paired lock " + lock.getAddress());
       this.emit("lockConnected", lock);
     } else {
@@ -651,8 +646,7 @@ class Manager extends EventEmitter {
    */
   async _onLockDisconnected(lock) {
     console.log("Disconnected from lock " + lock.getAddress());
-    store.setLockData(this.client.getLockData());
-    await store.saveData();
+    this.client.startMonitor();
   }
 
   /**
@@ -671,23 +665,66 @@ class Manager extends EventEmitter {
     this.emit("lockUnlock", lock);
   }
 
-  /** Restart scan every 5 seconds to re-send scan packages */
+  /**
+   * 
+   * @param {import('ttlock-sdk-js').TTLock} lock 
+   */
+  async _onLockUpdated(lock, paramsChanged) {
+    console.log("lockUpdated", paramsChanged);
+    // if lock has new operations read the operations and send updates
+    if (paramsChanged.newEvents == true && lock.hasNewEvents()) {
+      if (!lock.isConnected()) {
+        const result = await lock.connect();
+        // TODO: handle failed connection
+      }
+      await this._processOperationLog(lock);
+    }
+    if (paramsChanged.lockedStatus == true) {
+      const status = await lock.getLockStatus();
+      if (status == LockedStatus.LOCKED) {
+        console.log(">>>>>> Lock is now locked from new event <<<<<<");
+        this.emit("lockLock", lock);
+      }
+    }
+    if (paramsChanged.batteryCapacity == true) {
+      this.emit("lockBatteryUpdated", lock);
+    }
+
+    await lock.disconnect();
+  }
+
+  async _processOperationLog(lock) {
+    let operations = await lock.getOperationLog();
+    let lastStatus = LockedStatus.UNKNOWN;
+    for (let op of operations) {
+      if (LogOperateCategory.UNLOCK.includes(op.recordType)) {
+        lastStatus = LockedStatus.UNLOCKED;
+        console.log(">>>>>> Lock was unlocked <<<<<<");
+        this.emit("lockUnlock", lock);
+      } else if (LogOperateCategory.LOCK.includes(op.recordType)) {
+        lastStatus = LockedStatus.LOCKED;
+        console.log(">>>>>> Lock was locked <<<<<<");
+        this.emit("lockLock", lock);
+      }
+    }
+    const status = await lock.getLockStatus();
+    if (lastStatus != LockedStatus.UNKNOWN && status != lastStatus) {
+      if (status == LockedStatus.LOCKED) {
+        console.log(">>>>>> Lock is now locked <<<<<<");
+        this.emit("lockLock", lock);
+      } else if (status == LockedStatus.UNLOCKED) {
+        console.log(">>>>>> Lock is now unlocked <<<<<<");
+        this.emit("lockUnlock", lock);
+      }
+    }
+  }
+
+  /** Stop scan after 30 seconds */
   async _scanTimer() {
     if (typeof this.scanTimer == "undefined") {
-      this.scanCounter = 0;
-      this.scanTimer = setTimeout(this._scanTimer.bind(this), 5 * 1000);
-    } else {
-      this.scanCounter++;
-      if (this.scanCounter < SCAN_MAX) {
-        console.log("Restarting scan", this.scanCounter);
-        await this.client.stopScanLock();
-        await this.client.startScanLock();
-        this.scanTimer = setTimeout(this._scanTimer.bind(this), 5 * 1000);
-      } else {
-        this.scanTimer = undefined;
-        this.scanCounter = 0;
-        await this.stopScan();
-      }
+      this.scanTimer = setTimeout(() => {
+        this.stopScan();
+      }, 30 * 1000);
     }
   }
 }

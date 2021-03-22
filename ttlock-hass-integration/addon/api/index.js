@@ -25,7 +25,7 @@ module.exports = async (server) => {
   manager.on("lockConnected", sendLockStatusUpdate);
   manager.on("lockLock", sendLockStatusUpdate);
   manager.on("lockUnlock", sendLockStatusUpdate);
-  manager.on("lockUpdated", sendLockStatusUpdate);
+  manager.on("lockBatteryUpdated", sendLockStatusUpdate);
   manager.on("scanStart", sendStatusUpdate);
   manager.on("scanStop", sendStatusUpdate);
 
@@ -222,7 +222,6 @@ module.exports = async (server) => {
                 try {
                   const lockData = JSON.parse(msg.data.set);
                   store.setLockData(lockData);
-                  await store.saveData();
                   manager.updateClientLockDataFromStore();
                   manager.startScan();
                   api.sendConfigConfirm();
