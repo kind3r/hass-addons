@@ -231,6 +231,18 @@ module.exports = async (server) => {
               }
             }
             break;
+
+          case "operations":
+            console.log("operation request", msg);
+            if (msg.data && msg.data.address) {
+              const operations = await manager.getOperationLog(msg.data.address);
+              if (operations === false) {
+                api.sendError("Failed getting operation log", msg);
+              } else {
+                api.sendOperationLog(msg.data.address, operations);
+              }
+            }
+            break;
         }
       }
     });

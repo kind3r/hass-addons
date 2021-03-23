@@ -2,7 +2,7 @@
 
 const EventEmitter = require('events');
 const store = require("./store");
-const { TTLockClient, AudioManage, LockedStatus, LogOperateCategory } = require("ttlock-sdk-js");
+const { TTLockClient, AudioManage, LockedStatus, LogOperateCategory, LogOperateNames } = require("ttlock-sdk-js");
 
 const ScanType = Object.freeze({
   NONE: 0,
@@ -501,6 +501,43 @@ class Manager extends EventEmitter {
       }
     }
     return false;
+  }
+
+  async getOperationLog(address, reload) {
+    const lock = this.pairedLocks.get(address);
+    if (typeof reload == "undefined") {
+      reload = false;
+    }
+    if (typeof lock != "undefined") {
+      if (!(await this._connectLock(lock))) {
+        return false;
+      }
+      try {
+        let operations = JSON.parse(JSON.stringify(await lock.getOperationLog(true, reload)));
+        let validOperations = [];
+        // console.log(operations);
+        for (let operation of operations) {
+          if (operation) {
+            operation.recordTypeName = LogOperateNames[operation.recordType];
+            if (LogOperateCategory.LOCK.includes(operation.recordType)) {
+              operation.recordTypeCategory = "LOCK";
+            } else if (LogOperateCategory.UNLOCK.includes(operation.recordType)) {
+              operation.recordTypeCategory = "UNLOCK";
+            } else if (LogOperateCategory.FAILED.includes(operation.recordType)) {
+              operation.recordTypeCategory = "FAILED";
+            } else {
+              operation.recordTypeCategory = "OTHER";
+            }
+            validOperations.push(operation);
+          }
+        }
+        return validOperations;
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      return false;
+    }
   }
 
   /**
