@@ -15,18 +15,49 @@
           <template v-slot:default>
             <thead>
               <tr>
-                <th class="text-left">Type</th>
+                <th class="text-left">#</th>
+                <th class="text-left">&nbsp;</th>
                 <th class="text-left">Date</th>
+                <th class="text-left">Battery</th>
+                <th class="text-left">Credential</th>
                 <th class="text-left">Description</th>
+                <!-- <th class="text-left">Full</th> -->
               </tr>
             </thead>
             <tbody>
-              <tr v-for="operation of operations" :key="operation.recordNumber">
-                <td>{{ operation.recordTypeCategory }}</td>
+              <tr v-for="operation of sortedOperations" :key="operation.recordNumber">
+                <td>{{ operation.recordNumber }}</td>
+                <td>
+                  <v-icon left v-if="operation.recordTypeCategory == 'LOCK'">mdi-lock</v-icon>
+                  <v-icon left v-else-if="operation.recordTypeCategory == 'UNLOCK'">mdi-lock-open-variant</v-icon>
+                  <!-- <v-icon left v-else>mdi-history</v-icon> -->
+                </td>
                 <td>
                   {{ dateTime(operation.operateDate) }}
                 </td>
+                <td class="text-right">
+                  {{ operation.electricQuantity }}%
+                  <v-icon v-if="operation.electricQuantity > 90">mdi-battery-bluetooth</v-icon>
+                  <v-icon v-else-if="operation.electricQuantity > 80">mdi-battery-90-bluetooth</v-icon>
+                  <v-icon v-else-if="operation.electricQuantity > 70">mdi-battery-80-bluetooth</v-icon>
+                  <v-icon v-else-if="operation.electricQuantity > 60">mdi-battery-70-bluetooth</v-icon>
+                  <v-icon v-else-if="operation.electricQuantity > 50">mdi-battery-60-bluetooth</v-icon>
+                  <v-icon v-else-if="operation.electricQuantity > 40">mdi-battery-50-bluetooth</v-icon>
+                  <v-icon v-else-if="operation.electricQuantity > 30">mdi-battery-40-bluetooth</v-icon>
+                  <v-icon v-else-if="operation.electricQuantity > 20">mdi-battery-30-bluetooth</v-icon>
+                  <v-icon v-else color="red">mdi-battery-alert-bluetooth</v-icon>
+                </td>
+                <td>
+                  <strong v-if="operation.passwordName">
+                    {{ operation.passwordName }}
+                  </strong>
+                  <br />
+                  <small v-if="operation.password">
+                    {{ operation.password }}
+                  </small>
+                </td>
                 <td>{{ operation.recordTypeName }}</td>
+                <!-- <td>{{ JSON.stringify(operation) }}</td> -->
               </tr>
             </tbody>
           </template>
@@ -61,6 +92,22 @@ export default {
     waitingOperations() {
       return this.$store.state.waitingOperations;
     },
+    sortedOperations() {
+      let sorted = JSON.parse(JSON.stringify(this.operations));
+      sorted.sort((a, b) => {
+        if (a.operateDate > b.operateDate) {
+          return -1;
+        } else if (a.operateDate < b.operateDate) {
+          return 1;
+        } else if (a.recordNumber > b.recordNumber) {
+          return -1;
+        } else if (a.recordNumber < b.recordNumber) {
+          return 1;
+        }
+        return 0;
+      });
+      return sorted;
+    }
   },
   created() {
     if (typeof this.lock.name == "undefined") {

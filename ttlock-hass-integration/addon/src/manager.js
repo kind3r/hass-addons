@@ -528,6 +528,13 @@ class Manager extends EventEmitter {
             } else {
               operation.recordTypeCategory = "OTHER";
             }
+            if (typeof operation.password != "undefined") {
+              if (LogOperateCategory.IC.includes(operation.recordType)) {
+                operation.passwordName = store.getCardAlias(operation.password);
+              } else if (LogOperateCategory.FR.includes(operation.recordType)) {
+                operation.passwordName = store.getFingerAlias(operation.password);
+              }
+            }
             validOperations.push(operation);
           }
         }
