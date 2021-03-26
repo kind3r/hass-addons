@@ -235,6 +235,11 @@ const store = new Vuex.Store({
       if (state.waiting || state.waitingOperations) return;
       commit("setWaitingOperations", true);
       api.requestOperations(lockAddress);
+    },
+    async unpair({state, commit}, lockAddress) {
+      if (state.waiting) return;
+      commit("setWaiting");
+      api.unpair(lockAddress);
     }
   }
 });

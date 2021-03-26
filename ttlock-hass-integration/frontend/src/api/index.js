@@ -158,6 +158,15 @@ class Api {
     }));
   }
 
+  async unpair(address) {
+    this.ws.send(JSON.stringify({
+      type: "unpair",
+      data: {
+        address: address
+      }
+    }));
+  }
+
   async _onMessage(messageEvent) {
     try {
       const message = JSON.parse(messageEvent.data);

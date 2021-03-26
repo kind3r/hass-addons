@@ -168,6 +168,7 @@ class Manager extends EventEmitter {
         if (res != false) {
           this.pairedLocks.set(lock.getAddress(), lock);
           this.newLocks.delete(lock.getAddress());
+          this._bindLockEvents(lock);
           this.emit("lockPaired", lock);
           return true;
         }
@@ -220,6 +221,7 @@ class Manager extends EventEmitter {
       }
       try {
         const res = await lock.setAutoLockTime(value);
+        this.emit("lockUpdated", lock);
         return res;
       } catch (error) {
         console.error(error);
@@ -495,6 +497,7 @@ class Manager extends EventEmitter {
       try {
         const sound = audio == true ? AudioManage.TURN_ON : AudioManage.TURN_OFF;
         const res = await lock.setLockSound(sound);
+        this.emit("lockUpdated", lock);
         return res;
       } catch (error) {
         console.error(error);
@@ -545,6 +548,27 @@ class Manager extends EventEmitter {
     } else {
       return false;
     }
+  }
+
+  async resetLock(address) {
+    const lock = this.pairedLocks.get(address);
+    if (typeof lock != "undefined") {
+      if (!(await this._connectLock(lock))) {
+        return false;
+      }
+      try {
+        const res = await lock.resetLock();
+        if (res) {
+          lock.removeAllListeners();
+          this.pairedLocks.delete(address);
+          this.emit("lockListChanged");
+        }
+        return res;
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    return false;
   }
 
   /**
@@ -631,7 +655,7 @@ class Manager extends EventEmitter {
       }
     } else if (!lock.isInitialized()) {
       if (!this.newLocks.has(lock.getAddress())) {
-        this._bindLockEvents(lock);
+        // this._bindLockEvents(lock);
         // check if lock is in pairing mode
         // add it to the list of new locks, ready to be initialized
         console.log("Discovered new lock:", lock.toJSON());
@@ -731,7 +755,7 @@ class Manager extends EventEmitter {
       }
     }
     if (paramsChanged.batteryCapacity == true) {
-      this.emit("lockBatteryUpdated", lock);
+      this.emit("lockUpdated", lock);
     }
 
     await lock.disconnect();

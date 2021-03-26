@@ -4,6 +4,8 @@
 - Monitor advertisement packets to detect lock/unlock status updates (detects unlock events using pin, fingerprint or card)
 - View operation log
 - Optimise communication with the lock
+- Add lock unpair
+- Fixes on settings save
 
 ## [0.3.2] - 2021-03-16
 - Fix some bugs related to aliases when adding a new card or fingerprint
