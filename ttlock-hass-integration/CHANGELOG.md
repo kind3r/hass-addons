@@ -1,7 +1,8 @@
 # Changelog
 
-## [0.4.0] - 2021-03-
+## [0.4.0] - 2021-03-27
 - Monitor advertisement packets to detect lock/unlock status updates (detects unlock events using pin, fingerprint or card)
+- Discovery should be more reliable now
 - View operation log
 - Optimise communication with the lock
 - Add lock unpair
