@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Settings from '../views/Settings.vue';
 import Credentials from '../views/Credentials.vue';
+import Operations from '../views/Operations.vue';
 
 Vue.use(VueRouter)
 
@@ -21,6 +22,11 @@ const routes = [
     path: '/credentials/:address',
     name: 'Credentials',
     component: Credentials
+  },
+  {
+    path: '/operations/:address',
+    name: 'Operations',
+    component: Operations
   }
 ]
 

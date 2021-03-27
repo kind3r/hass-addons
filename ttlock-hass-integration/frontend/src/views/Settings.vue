@@ -5,7 +5,7 @@
         {{ lock.name }}
       </h1>
       <v-icon :title="lock.address">mdi-lan</v-icon>
-      {{lock.address}}
+      {{ lock.address }}
       <v-row class="mt-4 mb-4">
         <v-col sm="6" cols="12">
           <v-slider
@@ -35,6 +35,18 @@
           </v-switch>
         </v-col>
       </v-row>
+      <v-row>
+        <v-col>
+          <v-alert border="left" colored-border type="error" elevation="2">
+            <v-row align="center">
+              <v-col class="grow">Unpairing will remove all credentials stored and will reset the lock to defaults.</v-col>
+              <v-col class="shrink">
+                <v-btn color="error" v-on:click="unpair">Unpair</v-btn>
+              </v-col>
+            </v-row>
+          </v-alert>
+        </v-col>
+      </v-row>
       <v-row class="mt-4">
         <v-col class="text-center">
           <v-btn v-on:click="cancel" text>Cancel</v-btn>
@@ -44,14 +56,19 @@
         </v-col>
       </v-row>
     </v-container>
+    <ConfirmDlg ref="confirm" />
   </v-form>
 </template>
 <script>
 import moment from "moment";
+import ConfirmDlg from "@/components/ConfirmDlg";
 
 export default {
   name: "Settings",
   params: ["address"],
+  components: {
+    ConfirmDlg,
+  },
   data: function () {
     return {
       address: this.$route.params.address || this.address,
@@ -70,6 +87,12 @@ export default {
       }
       return {};
     },
+    // currentAutoLock() {
+    //   return this.lock.autoLockTime;
+    // },
+    // currentAudio() {
+    //   return this.lock.audio;
+    // },
     waitingSettings() {
       return this.$store.state.waitingSettings;
     },
@@ -111,6 +134,14 @@ export default {
     dateTime(str) {
       return moment(str, "YYYYMMDDHHmm").format("DD-MM-YYYY HH:mm");
     },
+    async unpair() {
+      if (await this.$refs.confirm.open("Confirm", "Are you sure you want to unpair this lock ?")) {
+        await this.$store.dispatch("unpair", this.lock.address);
+        this.$router.push({
+          name: "Home",
+        });
+      }
+    },
     cancel() {
       this.$router.push({
         name: "Home",
@@ -130,6 +161,13 @@ export default {
       });
     },
   },
-  watch: {},
+  watch: {
+    waitingSettings(newVal) {
+      if (newVal == false) {
+        this.autoLockTime = this.lock.autoLockTime;
+        this.audio = this.lock.audio;
+      }
+    },
+  },
 };
 </script>

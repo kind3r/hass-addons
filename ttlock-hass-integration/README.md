@@ -11,12 +11,15 @@ Feeling generous and want to support my work, here is [my PayPal link](https://p
 ## Features
 - Ingress Web UI for
   - Pair new lock
+  - Unpair lock
   - Lock / unlock
   - Manage auto-lock time
   - Manage sound on/off
   - Add / edit PIN codes
   - Add / remove IC Cards
   - Add / remove fingerprints
+  - View operations log
+  - Get updates about lock / unlock status
 - (optional) HA reporting and controling via `lock` domain device using MQTT discovery
   - Signal level
   - Battery level

@@ -16,10 +16,12 @@ const store = new Vuex.Store({
     passcodes: {},
     cards: {},
     fingers: {},
+    operations: {},
     waitingCredentials: false,
     waitingCardScan: false,
     waitingFingerScan: false,
     fingerScanProgress: 0,
+    waitingOperations: false,
     waiting: false,
     errors: [],
     activeLockAddress: "",
@@ -123,6 +125,7 @@ const store = new Vuex.Store({
       state.waitingFingerScan = false;
       state.fingerScanProgress = 0;
       state.waitingAutoLock = false;
+      state.waitingOperations = false;
     },
     clearErrors(state) {
       state.errors = [];
@@ -134,6 +137,17 @@ const store = new Vuex.Store({
       state.config = config;
       state.waitingConfig = false;
     },
+    setOperations(state, data) {
+      let newOperations = {};
+      newOperations[data.address] = data.operations;
+      for (const address in state.operations) {
+        if (address != data.address) {
+          newOperations[address] = state.operations[address];
+        }
+      }
+      state.operations = newOperations;
+      state.waitingOperations = false;
+    },
     setWaitingConfig(state, isWaiting) {
       state.waitingConfig = isWaiting;
     },
@@ -142,6 +156,9 @@ const store = new Vuex.Store({
     },
     setWaitingSettings(state, isWaiting) {
       state.waitingSettings = isWaiting;
+    },
+    setWaitingOperations(state, isWaiting) {
+      state.waitingOperations = isWaiting;
     }
   },
   actions: {
@@ -172,28 +189,28 @@ const store = new Vuex.Store({
       api.pair(lockAddress);
     },
     async setAutoLock({ state, commit }, { lockAddress, time }) {
-      if (state.setWaitingAutoLock) return;
+      if (state.waitingAutoLock) return;
       commit("setWaitingAutoLock", true);
       api.setAutoLock(lockAddress, time);
     },
     async readCredentials({ state, commit }, lockAddress) {
-      if (state.waiting || state.setWaitingCredentials) return;
+      if (state.waiting || state.waitingCredentials) return;
       commit("setWaitingCredentials");
       // TODO:check if credentials are already loaded
       api.requestCredentials(lockAddress);
     },
     async setPasscode({ state, commit }, { lockAddress, passcode }) {
-      if (state.waiting || state.setWaitingCredentials) return;
+      if (state.waiting || state.waitingCredentials) return;
       commit("setWaitingCredentials");
       api.setPasscode(lockAddress, passcode);
     },
     async setCard({ state, commit }, { lockAddress, card }) {
-      if (state.waiting || state.setWaitingCredentials) return;
+      if (state.waiting || state.waitingCredentials) return;
       commit("setWaitingCredentials");
       api.setCard(lockAddress, card);
     },
     async setFinger({ state, commit }, { lockAddress, finger }) {
-      if (state.waiting || state.setWaitingCredentials) return;
+      if (state.waiting || state.waitingCredentials) return;
       commit("setWaitingCredentials");
       api.setFinger(lockAddress, finger);
     },
@@ -213,6 +230,16 @@ const store = new Vuex.Store({
       if (state.waitingSetings) return;
       commit("setWaitingSettings", true);
       api.saveSettings(lockAddress, settings);
+    },
+    async readOperations({state, commit}, lockAddress) {
+      if (state.waiting || state.waitingOperations) return;
+      commit("setWaitingOperations", true);
+      api.requestOperations(lockAddress);
+    },
+    async unpair({state, commit}, lockAddress) {
+      if (state.waiting) return;
+      commit("setWaiting");
+      api.unpair(lockAddress);
     }
   }
 });

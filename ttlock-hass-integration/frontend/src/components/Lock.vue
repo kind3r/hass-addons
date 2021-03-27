@@ -63,6 +63,13 @@
         Settings
       </v-btn>
     </v-card-actions>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn v-if="!canPair" :disabled="waiting" v-on:click="operations">
+        <v-icon left>mdi-history</v-icon>
+        Operation log
+      </v-btn>
+    </v-card-actions>
   </v-card>
 </template>
 
@@ -142,6 +149,14 @@ export default {
         },
       });
     },
+    operations() {
+      this.$router.push({
+        name: "Operations",
+        params: {
+          address: this.lock.address,
+        },
+      });
+    }
   },
   watch: {
     waiting(newVal) {

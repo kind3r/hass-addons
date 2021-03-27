@@ -1,5 +1,6 @@
 'use strict';
 
+const { sleep } = require('ttlock-sdk-js');
 const WebSocket = require('ws');
 const manager = require("../src/manager");
 const store = require('../src/store');
@@ -210,6 +211,11 @@ module.exports = async (server) => {
                 }
               }
 
+              if (confirmedSettings.autolock || confirmedSettings.audio) {
+                // allow lock status update to be sent before sending configuration confirmation
+                await sleep(10);
+              }
+
               api.sendSettingsConfirmation(msg.data.address, confirmedSettings);
             }
             break;
@@ -222,7 +228,6 @@ module.exports = async (server) => {
                 try {
                   const lockData = JSON.parse(msg.data.set);
                   store.setLockData(lockData);
-                  await store.saveData();
                   manager.updateClientLockDataFromStore();
                   manager.startScan();
                   api.sendConfigConfirm();
@@ -232,6 +237,27 @@ module.exports = async (server) => {
               }
             }
             break;
+
+          case "operations":
+            if (msg.data && msg.data.address) {
+              const operations = await manager.getOperationLog(msg.data.address);
+              if (operations === false) {
+                api.sendError("Failed getting operation log", msg);
+              } else {
+                api.sendOperationLog(msg.data.address, operations);
+              }
+            }
+            break;
+
+          case "unpair":
+            if (msg.data && msg.data.address) {
+              const res = await manager.resetLock(msg.data.address);
+              if (res) {
+                // list update will handle the update
+              } else {
+                api.sendError("Failed to unpair lock", msg);
+              }
+            }
         }
       }
     });

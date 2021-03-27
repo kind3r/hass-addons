@@ -119,6 +119,7 @@ class WsApi {
     const message = new Message();
     message.setType("settings");
     message.setData({
+      address: address,
       settings: settings
     });
     this.ws.send(message.toJSON());
@@ -148,6 +149,16 @@ class WsApi {
     message.setType("config");
     message.setData({
       set: typeof error != "undefined" ? error : true
+    });
+    this.ws.send(message.toJSON());
+  }
+
+  async sendOperationLog(address, operations) {
+    const message = new Message();
+    message.setType("operations");
+    message.setData({
+      address: address,
+      operations: operations
     });
     this.ws.send(message.toJSON());
   }

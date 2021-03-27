@@ -149,6 +149,24 @@ class Api {
     }));
   }
 
+  async requestOperations(address) {
+    this.ws.send(JSON.stringify({
+      type: "operations",
+      data: {
+        address: address
+      }
+    }));
+  }
+
+  async unpair(address) {
+    this.ws.send(JSON.stringify({
+      type: "unpair",
+      data: {
+        address: address
+      }
+    }));
+  }
+
   async _onMessage(messageEvent) {
     try {
       const message = JSON.parse(messageEvent.data);
@@ -206,6 +224,14 @@ class Api {
               this.store.commit("setWaitingConfig", false);
               if (message.data.set !== true) {
                 this.store.commit("setError", message.data.set);
+              }
+            }
+            break;
+          case "operations":
+            if (typeof message.data != "undefined") {
+              const data = message.data;
+              if (typeof data.address != "undefined" && typeof data.operations != "undefined") {
+                this.store.commit("setOperations", data);
               }
             }
             break;
