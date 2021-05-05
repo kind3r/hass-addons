@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.4.1] - 2021-05-05
+- Bump SDK in attempt at fixing connect limbo
+
 ## [0.4.0] - 2021-03-27
 - Monitor advertisement packets to detect lock/unlock status updates (detects unlock events using pin, fingerprint or card)
 - Discovery should be more reliable now
